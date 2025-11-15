@@ -7,13 +7,23 @@
 
 import SwiftUI
 
+
+
 struct ContentView: View {
+    @State private var test = "Hello Watch"
+    
     var body: some View {
         VStack {
             Image(systemName: "globe")
                 .imageScale(.large)
                 .foregroundStyle(.tint)
-            Text("Hello, world!")
+            Text("sdaf!")
+            
+            Button(test) {
+                print("Hello")
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(Color("Accent"))
         }
         .padding()
     }
