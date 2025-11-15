@@ -18,7 +18,7 @@ struct ContentView: View {
             // Create the Welcome User title
             
             Text("Welcome User!")
-                .font(.system(size: 28, weight: .bold))
+                .font(.system(size: 45, weight: .bold))
                 .foregroundColor(Color("Text"))
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: .infinity)
@@ -30,30 +30,24 @@ struct ContentView: View {
         }
         
         VStack {
-            Button(action: {
-                print("Success")
-            }) {
-                Text("Start")
-                    .fontWeight(.bold)
-                    .frame(width: 120, height: 50)
-                    .background (
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color("Blue").opacity(isPressed ? 0.8 : 0.4))
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color("Blue"), lineWidth: 2)
-                    )
-                    .foregroundColor(Color("Text"))
-            }
-            .buttonStyle(.plain)
-            .scaleEffect(isPressed ? 0.95 : 1.0)
-            .animation(.spring(), value: isPressed)
-            .simultaneousGesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged { _ in isPressed = true }
-                    .onEnded { _ in isPressed = false }
+            CustomButton(
+                title: "Start",
+                action: { print("Start tapped") },
+                buttonColor: Color("Blue")
             )
+            
+            CustomButton(
+                title: "Configure",
+                action: { print("Configure tapped") },
+                buttonColor: Color("Green")
+            )
+            
+            CustomButton(
+                title: "Settings",
+                action: { print("Settings tapped") },
+                buttonColor: Color("Purple")
+            )
+            
         }
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
