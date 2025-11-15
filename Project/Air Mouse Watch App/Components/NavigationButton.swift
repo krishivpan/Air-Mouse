@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct CustomButton: View {
+struct NavigationButton: View {
     let title: String
     let buttonColor: Color
     @State private var isPressed = false

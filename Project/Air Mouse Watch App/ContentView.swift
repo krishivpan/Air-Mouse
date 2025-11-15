@@ -26,12 +26,12 @@ struct ContentView: View {
                 VStack(spacing: 8) {
                     // Navigation button
                     NavigationLink(destination: StartPage()) {
-                        CustomButton(title: "Start", buttonColor: Color("Blue"))
+                        NavigationButton(title: "Start", buttonColor: Color("Blue"))
                     }
                     .buttonStyle(.plain)
                     
-                    CustomButton(title: "Configure", buttonColor: Color("Green"))
-                    CustomButton(title: "Settings", buttonColor: Color("Purple"))
+                    NavigationButton(title: "Configure", buttonColor: Color("Green"))
+                    NavigationButton(title: "Settings", buttonColor: Color("Purple"))
                 }
                 .padding()
                 .frame(maxWidth: .infinity)
