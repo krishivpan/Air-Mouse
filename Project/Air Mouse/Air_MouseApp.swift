@@ -9,9 +9,12 @@ import SwiftUI
 
 @main
 struct Air_MouseApp: App {
+    @StateObject private var sessionManager = PhoneSessionManager.shared
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(sessionManager)
         }
     }
 }
