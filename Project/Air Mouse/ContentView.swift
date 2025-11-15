@@ -8,17 +8,18 @@
 import SwiftUI
 
 struct ContentView: View {
+    @EnvironmentObject private var phoneSession: PhoneSessionManager
+
     var body: some View {
         VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+            Text("Last gesture: \(phoneSession.lastGesture?.rawValue ?? "none")")
+            // Rest of your UI
         }
-        .padding()
     }
 }
 
+// IMPORTANT: provide the environmentObject in Preview, or preview will crash
 #Preview {
     ContentView()
+        .environmentObject(PhoneSessionManager.shared)
 }

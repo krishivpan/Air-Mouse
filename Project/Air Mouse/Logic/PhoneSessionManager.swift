@@ -13,7 +13,7 @@ final class PhoneSessionManager: NSObject, ObservableObject, WCSessionDelegate {
 
     static let shared = PhoneSessionManager()
 
-    @Published var lastGesture: String?
+    @Published var lastGesture: AirMouseGesture?    // ⬅️ use the enum
 
     private override init() {
         super.init()
@@ -48,19 +48,21 @@ final class PhoneSessionManager: NSObject, ObservableObject, WCSessionDelegate {
     func sessionDidBecomeInactive(_ session: WCSession) { }
 
     func sessionDidDeactivate(_ session: WCSession) {
-        // Required: when the session is deactivated, re-activate a new session
         WCSession.default.activate()
     }
 
     func session(_ session: WCSession, didReceiveMessage message: [String : Any]) {
         print("Received message from Watch: \(message)")
 
-        guard let gesture = message["gesture"] as? String else { return }
+        // ⬇️ use the shared key + convert to enum
+        guard
+            let gestureString = message[AirMouseKey.gesture] as? String,
+            let gesture = AirMouseGesture(rawValue: gestureString)
+        else { return }
 
         DispatchQueue.main.async {
             self.lastGesture = gesture
-            // TODO: Call into your "mouse" logic here
-            // e.g., MouseController.shared.handleGesture(gesture)
+            // MouseController.shared.handleGesture(gesture)
         }
     }
 }

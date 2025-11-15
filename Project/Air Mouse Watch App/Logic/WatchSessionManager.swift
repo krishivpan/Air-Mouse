@@ -33,20 +33,20 @@ final class WatchSessionManager: NSObject, ObservableObject, WCSessionDelegate {
     }
 
     // Call this from your UI when you detect the "tap"/clench/etc.
-    func sendTapGesture() {
+    func sendGesture(_ gesture: AirMouseGesture) {
         let session = WCSession.default
 
         guard session.isReachable else {
-            print("iPhone is not reachable")
+            print("iPhone not reachable")
             return
         }
 
         let message: [String: Any] = [
-            "gesture": "tap"        // you can change this to “clench”, etc.
+            AirMouseKey.gesture: gesture.rawValue
         ]
 
         session.sendMessage(message, replyHandler: nil) { error in
-            print("Error sending message: \(error.localizedDescription)")
+            print("Error sending gesture: \(error.localizedDescription)")
         }
     }
 

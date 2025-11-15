@@ -9,12 +9,12 @@ import SwiftUI
 
 @main
 struct Air_Mouse_Watch_AppApp: App {
-    @StateObject private var sessionManager = WatchSessionManager.shared
+    @StateObject private var watchSession = WatchSessionManager.shared
 
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .environmentObject(sessionManager)
+                .environmentObject(watchSession)
         }
     }
 }

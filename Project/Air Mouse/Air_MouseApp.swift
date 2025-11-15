@@ -9,12 +9,12 @@ import SwiftUI
 
 @main
 struct Air_MouseApp: App {
-    @StateObject private var sessionManager = PhoneSessionManager.shared
+    @StateObject private var phoneSession = PhoneSessionManager.shared
 
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .environmentObject(sessionManager)
+                .environmentObject(phoneSession) // Receives updates from the Phone Session (incoming gestures)
         }
     }
 }
