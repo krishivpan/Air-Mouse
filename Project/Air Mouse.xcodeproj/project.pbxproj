@@ -77,29 +77,9 @@
 			path = "Air Mouse";
 			sourceTree = "<group>";
 		};
-		5DEA0E9B2EC8FB2F00BC991E /* Air MouseTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "Air MouseTests";
-			sourceTree = "<group>";
-		};
-		5DEA0EA52EC8FB2F00BC991E /* Air MouseUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "Air MouseUITests";
-			sourceTree = "<group>";
-		};
 		5DEA0EB22EC8FB2F00BC991E /* Air Mouse Watch App */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = "Air Mouse Watch App";
-			sourceTree = "<group>";
-		};
-		5DEA0EC02EC8FB3000BC991E /* Air Mouse Watch AppTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "Air Mouse Watch AppTests";
-			sourceTree = "<group>";
-		};
-		5DEA0ECA2EC8FB3000BC991E /* Air Mouse Watch AppUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "Air Mouse Watch AppUITests";
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -154,11 +134,7 @@
 			isa = PBXGroup;
 			children = (
 				5DEA0E8D2EC8FB2E00BC991E /* Air Mouse */,
-				5DEA0E9B2EC8FB2F00BC991E /* Air MouseTests */,
-				5DEA0EA52EC8FB2F00BC991E /* Air MouseUITests */,
 				5DEA0EB22EC8FB2F00BC991E /* Air Mouse Watch App */,
-				5DEA0EC02EC8FB3000BC991E /* Air Mouse Watch AppTests */,
-				5DEA0ECA2EC8FB3000BC991E /* Air Mouse Watch AppUITests */,
 				5DEA0E8C2EC8FB2E00BC991E /* Products */,
 			);
 			sourceTree = "<group>";
@@ -216,9 +192,6 @@
 			dependencies = (
 				5DEA0E9A2EC8FB2F00BC991E /* PBXTargetDependency */,
 			);
-			fileSystemSynchronizedGroups = (
-				5DEA0E9B2EC8FB2F00BC991E /* Air MouseTests */,
-			);
 			name = "Air MouseTests";
 			packageProductDependencies = (
 			);
@@ -238,9 +211,6 @@
 			);
 			dependencies = (
 				5DEA0EA42EC8FB2F00BC991E /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				5DEA0EA52EC8FB2F00BC991E /* Air MouseUITests */,
 			);
 			name = "Air MouseUITests";
 			packageProductDependencies = (
@@ -284,9 +254,6 @@
 			dependencies = (
 				5DEA0EBF2EC8FB3000BC991E /* PBXTargetDependency */,
 			);
-			fileSystemSynchronizedGroups = (
-				5DEA0EC02EC8FB3000BC991E /* Air Mouse Watch AppTests */,
-			);
 			name = "Air Mouse Watch AppTests";
 			packageProductDependencies = (
 			);
@@ -306,9 +273,6 @@
 			);
 			dependencies = (
 				5DEA0EC92EC8FB3000BC991E /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				5DEA0ECA2EC8FB3000BC991E /* Air Mouse Watch AppUITests */,
 			);
 			name = "Air Mouse Watch AppUITests";
 			packageProductDependencies = (
