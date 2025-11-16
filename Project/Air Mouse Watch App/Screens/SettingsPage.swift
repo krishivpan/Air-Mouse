@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct SettingsPage: View {
-    @EnvironmentObject var accel: AccelerometerManager
+    @ObservedObject var accel = AccelerometerManager.shared
 
     var body: some View {
         ZStack {
@@ -46,7 +46,7 @@ private extension SettingsPage {
     var headerView: some View {
         VStack(alignment: .leading, spacing: 3) {
             Text("Settings")
-                .font(.system(size: 24, weight: .bold, design: .rounded))
+                .font(.system(size: 22, weight: .bold, design: .rounded))
                 .foregroundStyle(
                     LinearGradient(
                         colors: [Color.purple, Color.purple.opacity(0.7)],
@@ -202,6 +202,5 @@ private extension SettingsPage {
 #Preview {
     NavigationStack {
         SettingsPage()
-            .environmentObject(AccelerometerManager())
     }
 }

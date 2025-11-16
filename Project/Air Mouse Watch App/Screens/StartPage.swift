@@ -98,12 +98,10 @@ struct breathingCircle: View {
 
 struct StartPage: View {
     @EnvironmentObject private var watchSession: WatchSessionManager
-    @StateObject private var accel = AccelerometerManager()
+    @ObservedObject private var accel = AccelerometerManager.shared
     @StateObject private var runtimeController = ExtendedRuntimeController()
     
     @State private var currentGesture: AirMouseGesture?
-    @State private var crownRotation: Double = 0.0
-    @State private var showCalibrationHint = false
 
     var body: some View {
         ZStack {
@@ -143,14 +141,6 @@ struct StartPage: View {
                         Text(watchSession.isReachable ? "Connected" : "Disconnected")
                             .font(.system(size: 10))
                             .foregroundColor(watchSession.isReachable ? .green : .red)
-                    }
-                    
-                    // Calibration hint (shows briefly on appear)
-                    if showCalibrationHint {
-                        Text("Rotate crown to calibrate")
-                            .font(.system(size: 9))
-                            .foregroundColor(.gray)
-                            .transition(.opacity)
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -195,15 +185,6 @@ struct StartPage: View {
                 }
                 .frame(maxWidth: .infinity, minHeight: 90)
                 .padding()
-                .focusable()
-                .digitalCrownRotation($crownRotation, from: -10, through: 10, by: 1, sensitivity: .low, isContinuous: false, isHapticFeedbackEnabled: true)
-                .onChange(of: crownRotation) { oldValue, newValue in
-                    // Trigger calibration when crown is rotated significantly
-                    if abs(newValue - oldValue) > 5 {
-                        triggerCalibration()
-                        crownRotation = 0.0 // Reset
-                    }
-                }
                 .onChange(of: accel.detectedSwipeLeft) { _, newValue in
                     if newValue {
                         // Play haptic feedback (stronger)
@@ -261,16 +242,6 @@ struct StartPage: View {
         .onAppear {
             accel.start()
             runtimeController.startSession()
-            
-            // Show calibration hint for 3 seconds on first appear
-            withAnimation {
-                showCalibrationHint = true
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                withAnimation {
-                    showCalibrationHint = false
-                }
-            }
         }
         .onDisappear {
             accel.stop()

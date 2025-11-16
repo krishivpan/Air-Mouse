@@ -3,6 +3,8 @@ import Foundation
 import Combine
 
 class AccelerometerManager: ObservableObject {
+    static let shared = AccelerometerManager()
+    
     private let motion = CMMotionManager()
     
     // MARK: - Published Gesture Toggles
