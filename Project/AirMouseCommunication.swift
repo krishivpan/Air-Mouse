@@ -12,12 +12,12 @@ enum AirMouseKey {
 }
 
 enum AirMouseGesture: String {
-    case tap
-    case doubleTap
-    case clench
-    case doubleClench
-    case pinch
-    case doublePinch
     case leftSwipe
-    
+    case rightSwipe
+    case upSwipe
+    case downSwipe
+    case clockSwipe
+    case counterSwipe
+    case tap
+    case clench
 }
