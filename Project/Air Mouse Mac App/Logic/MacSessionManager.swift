@@ -2,6 +2,8 @@
 //  MacSessionManager.swift
 //  Air Mouse Mac
 //
+//  Created by You on 2025-11-16.
+//
 
 import Foundation
 import MultipeerConnectivity
@@ -9,93 +11,61 @@ import Combine
 
 final class MacSessionManager: NSObject, ObservableObject {
 
-    // Published for the Mac UI
-    @Published var isPhoneConnected: Bool = false
+    static let shared = MacSessionManager()
+
+    // Published state for UI
+    @Published var isConnected: Bool = false
+    @Published var connectedPeerName: String?
     @Published var lastGesture: AirMouseGesture?
 
-    private let serviceType = "airmouse-ctrl" // must match iOS
-    private let peerID: MCPeerID
-    private var mcSession: MCSession!
-    private var browser: MCNearbyServiceBrowser!
+    // Multipeer
+    private let serviceType = "airmouse-gest"   // MUST match iPhone
+    private let myPeerID: MCPeerID
+    private let session: MCSession
+    private let browser: MCNearbyServiceBrowser
 
-    override init() {
-        // Show machine name on the other side
-        let displayName = Host.current().localizedName ?? "Mac"
-        self.peerID = MCPeerID(displayName: displayName)
-        super.init()
+    private let debugLogPrefix = "[Mac⇄Phone][MC]"
 
-        setupMultipeer()
-    }
+    private override init() {
+        // Display name of this Mac in the session
+        let hostName = Host.current().localizedName ?? "Mac"
+        self.myPeerID = MCPeerID(displayName: hostName)
 
-    private func setupMultipeer() {
-        mcSession = MCSession(
-            peer: peerID,
+        self.session = MCSession(
+            peer: myPeerID,
             securityIdentity: nil,
             encryptionPreference: .required
         )
-        mcSession.delegate = self
 
-        browser = MCNearbyServiceBrowser(peer: peerID, serviceType: serviceType)
+        self.browser = MCNearbyServiceBrowser(
+            peer: myPeerID,
+            serviceType: serviceType
+        )
+
+        super.init()
+
+        log("INIT with peerID = \(hostName), serviceType = \(serviceType)")
+
+        session.delegate = self
         browser.delegate = self
+
         browser.startBrowsingForPeers()
-
-        print("Mac: started browsing for iPhone peers")
-    }
-}
-
-// MARK: - MCSessionDelegate
-
-extension MacSessionManager: MCSessionDelegate {
-
-    func session(_ session: MCSession, peer peerID: MCPeerID, didChange state: MCSessionState) {
-        print("Mac: peer \(peerID.displayName) state changed: \(state.rawValue)")
-        DispatchQueue.main.async {
-            self.isPhoneConnected = (state == .connected)
-        }
+        log("Started browsing for iPhone peers.")
     }
 
-    func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID) {
-        // Decode gesture payload from iPhone
-        do {
-            let payload = try JSONDecoder().decode([String: String].self, from: data)
-            if let gestureString = payload[AirMouseKey.gesture],
-               let gesture = AirMouseGesture(rawValue: gestureString) {
-                DispatchQueue.main.async {
-                    self.lastGesture = gesture
-                }
-                print("Mac: received gesture \(gesture.rawValue)")
-            }
-        } catch {
-            print("Mac: failed to decode data from iPhone: \(error.localizedDescription)")
-        }
+    deinit {
+        browser.stopBrowsingForPeers()
+        session.disconnect()
+        log("Deinit: stopped browsing and disconnected session.")
     }
 
-    func session(
-        _ session: MCSession,
-        didReceive stream: InputStream,
-        withName streamName: String,
-        fromPeer peerID: MCPeerID
-    ) {
-        // Not used
+    private func log(_ message: String) {
+        print("\(debugLogPrefix) \(message)")
     }
 
-    func session(
-        _ session: MCSession,
-        didStartReceivingResourceWithName resourceName: String,
-        fromPeer peerID: MCPeerID,
-        with progress: Progress
-    ) {
-        // Not used
-    }
-
-    func session(
-        _ session: MCSession,
-        didFinishReceivingResourceWithName resourceName: String,
-        fromPeer peerID: MCPeerID,
-        at localURL: URL?,
-        withError error: Error?
-    ) {
-        // Not used
+    private func logPeers(_ whereFrom: String) {
+        let names = session.connectedPeers.map { $0.displayName }
+        print("\(debugLogPrefix) \(whereFrom) – connectedPeers = \(names)")
     }
 }
 
@@ -103,29 +73,92 @@ extension MacSessionManager: MCSessionDelegate {
 
 extension MacSessionManager: MCNearbyServiceBrowserDelegate {
 
-    func browser(
-        _ browser: MCNearbyServiceBrowser,
-        foundPeer peerID: MCPeerID,
-        withDiscoveryInfo info: [String : String]?
-    ) {
-        print("Mac: found peer \(peerID.displayName), inviting...")
-
-        browser.invitePeer(
-            peerID,
-            to: mcSession,
-            withContext: nil,
-            timeout: 15
-        )
+    func browser(_ browser: MCNearbyServiceBrowser,
+                 foundPeer peerID: MCPeerID,
+                 withDiscoveryInfo info: [String : String]?) {
+        log("FOUND peer: \(peerID.displayName), inviting...")
+        logPeers("before invite")
+        browser.invitePeer(peerID, to: session, withContext: nil, timeout: 10)
     }
 
-    func browser(_ browser: MCNearbyServiceBrowser, lostPeer peerID: MCPeerID) {
-        print("Mac: lost peer \(peerID.displayName)")
+    func browser(_ browser: MCNearbyServiceBrowser,
+                 lostPeer peerID: MCPeerID) {
+        log("LOST peer: \(peerID.displayName)")
+        logPeers("after lostPeer")
     }
 
-    func browser(
-        _ browser: MCNearbyServiceBrowser,
-        didNotStartBrowsingForPeers error: Error
-    ) {
-        print("Mac: failed to start browsing: \(error.localizedDescription)")
+    func browser(_ browser: MCNearbyServiceBrowser,
+                 didNotStartBrowsingForPeers error: Error) {
+        log("❌ Failed to start browsing: \(error.localizedDescription)")
+    }
+}
+
+// MARK: - MCSessionDelegate
+
+extension MacSessionManager: MCSessionDelegate {
+
+    func session(_ session: MCSession,
+                 peer peerID: MCPeerID,
+                 didChange state: MCSessionState) {
+        DispatchQueue.main.async {
+            switch state {
+            case .connected:
+                self.isConnected = true
+                self.connectedPeerName = peerID.displayName
+                self.log("🟢 didChange state = CONNECTED to \(peerID.displayName)")
+            case .connecting:
+                self.log("🟡 didChange state = CONNECTING to \(peerID.displayName)")
+            case .notConnected:
+                self.log("🔴 didChange state = NOT CONNECTED to \(peerID.displayName)")
+                self.isConnected = false
+                self.connectedPeerName = nil
+                self.lastGesture = nil
+            @unknown default:
+                self.log("⚠️ didChange state = UNKNOWN for \(peerID.displayName)")
+            }
+
+            self.logPeers("didChange state")
+        }
+    }
+
+    func session(_ session: MCSession,
+                 didReceive data: Data,
+                 fromPeer peerID: MCPeerID) {
+        // Expect a JSON dictionary: ["gesture": "<rawValue>"]
+        guard
+            let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
+            let gestureString = json[AirMouseKey.gesture] as? String,
+            let gesture = AirMouseGesture(rawValue: gestureString)
+        else {
+            log("Received DATA from \(peerID.displayName) but could not parse gesture. Size = \(data.count) bytes")
+            return
+        }
+
+        DispatchQueue.main.async {
+            self.lastGesture = gesture
+            self.log("✅ Received gesture from \(peerID.displayName): \(gesture.rawValue)")
+        }
+    }
+
+    func session(_ session: MCSession,
+                 didReceive stream: InputStream,
+                 withName streamName: String,
+                 fromPeer peerID: MCPeerID) {
+        log("Received STREAM \(streamName) from \(peerID.displayName) (unused)")
+    }
+
+    func session(_ session: MCSession,
+                 didStartReceivingResourceWithName resourceName: String,
+                 fromPeer peerID: MCPeerID,
+                 with progress: Progress) {
+        log("Started receiving RESOURCE \(resourceName) from \(peerID.displayName) (unused)")
+    }
+
+    func session(_ session: MCSession,
+                 didFinishReceivingResourceWithName resourceName: String,
+                 fromPeer peerID: MCPeerID,
+                 at localURL: URL?,
+                 withError error: Error?) {
+        log("Finished receiving RESOURCE \(resourceName) from \(peerID.displayName) (unused). Error=\(String(describing: error))")
     }
 }

@@ -7,7 +7,7 @@ import SwiftUI
 
 @main
 struct Air_Mouse_MacApp: App {
-    @StateObject private var macSession = MacSessionManager()
+    @StateObject private var macSession = MacSessionManager.shared
 
     var body: some Scene {
         WindowGroup {

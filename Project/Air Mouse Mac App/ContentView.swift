@@ -2,11 +2,13 @@
 //  ContentView.swift
 //  Air Mouse Mac
 //
+//  Created by You on 2025-11-16.
+//
 
 import SwiftUI
 
 struct ContentView: View {
-    @EnvironmentObject private var macSession: MacSessionManager
+    @StateObject private var macConnection = MacSessionManager.shared
 
     var body: some View {
         ZStack {
@@ -20,10 +22,10 @@ struct ContentView: View {
             )
             .ignoresSafeArea()
 
-            VStack(alignment: .leading, spacing: 24) {
+            VStack(alignment: .leading, spacing: 20) {
 
                 // Header
-                VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: 4) {
                     Text("Air Mouse – Mac")
                         .font(.system(size: 28, weight: .bold, design: .rounded))
                         .foregroundStyle(
@@ -40,64 +42,152 @@ struct ContentView: View {
                 }
 
                 // Connection status
-                HStack {
-                    Text("iPhone Connection")
-                        .font(.headline)
-                        .foregroundColor(.white)
+                connectionStatusSection
 
-                    Spacer()
+                // Gesture feed
+                gestureFeedSection
 
-                    HStack(spacing: 6) {
-                        Circle()
-                            .fill(macSession.isPhoneConnected ? Color.green : Color.red)
-                            .frame(width: 10, height: 10)
-                        Text(macSession.isPhoneConnected ? "Connected" : "Not Connected")
-                            .foregroundColor(macSession.isPhoneConnected ? .green : .red)
-                            .font(.subheadline)
-                    }
-                }
+                // Debug info
+                debugInfoSection
 
-                // Gesture display
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Last Gesture")
-                        .font(.headline)
-                        .foregroundColor(.white)
+                Spacer()
+            }
+            .padding(24)
+        }
+        .frame(minWidth: 420, minHeight: 260)
+    }
 
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(
-                            LinearGradient(
-                                colors: [
-                                    Color(red: 0.16, green: 0.16, blue: 0.24),
-                                    Color(red: 0.10, green: 0.10, blue: 0.18)
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .overlay(
-                            HStack {
-                                Text(prettyGestureName(macSession.lastGesture))
-                                    .font(.title3)
-                                    .fontWeight(.semibold)
-                                    .foregroundColor(.white)
-                                    .lineLimit(1)
-                                    .minimumScaleFactor(0.7)
+    // MARK: - Subviews
 
-                                Spacer()
-                            }
-                            .padding(.horizontal, 16)
-                        )
-                        .frame(height: 70)
+    private var connectionStatusSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Connection Status")
+                .font(.headline)
+                .foregroundColor(.white)
+
+            HStack(spacing: 10) {
+                Circle()
+                    .fill(macConnection.isConnected ? Color.green : Color.red)
+                    .frame(width: 10, height: 10)
+
+                Text(macConnection.isConnected ? "Connected to iPhone" : "Not Connected")
+                    .font(.subheadline)
+                    .foregroundColor(macConnection.isConnected ? .green : .red)
+
+                if let peerName = macConnection.connectedPeerName, macConnection.isConnected {
+                    Text("(\(peerName))")
+                        .font(.caption)
+                        .foregroundColor(.gray)
                 }
 
                 Spacer()
             }
-            .padding()
         }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 18)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color(red: 0.12, green: 0.12, blue: 0.18),
+                            Color(red: 0.08, green: 0.08, blue: 0.14)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+        )
+    }
+
+    private var gestureFeedSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Gesture Feed")
+                .font(.headline)
+                .foregroundColor(.white)
+
+            RoundedRectangle(cornerRadius: 16)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color(red: 0.16, green: 0.16, blue: 0.24),
+                            Color(red: 0.10, green: 0.10, blue: 0.18)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .overlay(
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(prettyGestureName(macConnection.lastGesture))
+                                .font(.title3)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.white)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.7)
+
+                            Text("Live from iPhone")
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                        }
+
+                        Spacer()
+
+                        ZStack {
+                            Circle()
+                                .stroke(Color.blue.opacity(0.3), lineWidth: 6)
+                                .frame(width: 42, height: 42)
+                            Circle()
+                                .fill(Color.blue.opacity(0.9))
+                                .frame(width: 16, height: 16)
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                )
+                .frame(height: 80)
+        }
+        .padding(.top, 4)
+    }
+
+    private var debugInfoSection: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Debug Info (Mac)")
+                .font(.caption)
+                .foregroundColor(.gray)
+
+            Text("isConnected: \(macConnection.isConnected.description)")
+                .font(.caption2)
+                .foregroundColor(.gray)
+
+            if let name = macConnection.connectedPeerName {
+                Text("connectedPeerName: \(name)")
+                    .font(.caption2)
+                    .foregroundColor(.gray)
+            } else {
+                Text("connectedPeerName: nil")
+                    .font(.caption2)
+                    .foregroundColor(.gray)
+            }
+
+            if let gesture = macConnection.lastGesture {
+                Text("lastGesture: \(gesture.rawValue)")
+                    .font(.caption2)
+                    .foregroundColor(.gray)
+            } else {
+                Text("lastGesture: nil")
+                    .font(.caption2)
+                    .foregroundColor(.gray)
+            }
+        }
+        .padding(10)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.black.opacity(0.3))
+        )
     }
 
     private func prettyGestureName(_ gesture: AirMouseGesture?) -> String {
-        guard let gesture = gesture else { return "Waiting for Gesture..." }
+        guard let gesture = gesture else { return "Listening for Gestures" }
 
         switch gesture {
         case .leftSwipe:      return "Left Swipe"
@@ -116,5 +206,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
-        .environmentObject(MacSessionManager())
+        .environmentObject(MacSessionManager.shared)
 }
