@@ -22,11 +22,11 @@ class AccelerometerManager: ObservableObject {
     @Published var calibrationCountdown = 0
     @Published var calibrationDone = false
     
-    private var baselineX: Double = 0
     private var baselineY: Double = 0
+    private var baselineZ: Double = 0  // Changed from baselineX to baselineZ
     
-    // MARK: - Thresholds (increased for user acceleration)
-    private let threshold: Double = 1.2  // Lowered threshold for better left detection
+    // MARK: - Thresholds
+    private let threshold: Double = 1.2
     private let debounceInterval: TimeInterval = 0.35
     private var lastSwipeTime = Date.distantPast
     
@@ -36,34 +36,35 @@ class AccelerometerManager: ObservableObject {
         
         motion.deviceMotionUpdateInterval = 0.02
         
-        // Use deviceMotion instead of accelerometer - this filters out gravity!
         motion.startDeviceMotionUpdates(to: .main) { [weak self] data, _ in
             guard let self = self, let motion = data else { return }
             
-            // userAcceleration excludes gravity - only actual movement
             let userAccel = motion.userAcceleration
             
             // Apply baseline calibration
-            let dx = userAccel.x - self.baselineX
+            // Y-axis: up/down (toward top of screen)
+            // Z-axis: left/right (when hand is rotated 90° counterclockwise)
             let dy = userAccel.y - self.baselineY
+            let dz = userAccel.z - self.baselineZ
             
             let now = Date()
             guard now.timeIntervalSince(self.lastSwipeTime) > self.debounceInterval else { return }
             
-            // Use absolute values to check if movement exceeds threshold
-            let absX = abs(dx)
             let absY = abs(dy)
+            let absZ = abs(dz)
             
-            // Determine primary direction (X or Y) - only trigger the dominant axis
-            if absX > absY {
-                // Horizontal movement dominant
-                if self.detectLeft && dx < -self.threshold {
-                    self.trigger(.left)
-                } else if self.detectRight && dx > self.threshold {
+            // Determine primary direction (Y or Z) - only trigger the dominant axis
+            if absZ > absY {
+                // Horizontal movement dominant (Z-axis for left/right)
+                // When hand moves forward (away from body): Z increases -> RIGHT
+                // When hand moves backward (toward body): Z decreases -> LEFT
+                if self.detectRight && dz > self.threshold {
                     self.trigger(.right)
+                } else if self.detectLeft && dz < -self.threshold {
+                    self.trigger(.left)
                 }
             } else {
-                // Vertical movement dominant
+                // Vertical movement dominant (Y-axis for up/down)
                 if self.detectUp && dy > self.threshold {
                     self.trigger(.up)
                 } else if self.detectDown && dy < -self.threshold {
@@ -116,31 +117,27 @@ class AccelerometerManager: ObservableObject {
     }
     
     private func finishCalibration() {
-        // Temporarily store the current motion data
         var capturedUserAccel: CMAcceleration?
         
-        // Start a quick update just to get the current state
         if motion.isDeviceMotionAvailable {
             motion.startDeviceMotionUpdates(to: .main) { [weak self] data, _ in
                 guard let self = self, let motion = data else { return }
                 capturedUserAccel = motion.userAcceleration
             }
             
-            // Wait a moment to capture the data
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
                 guard let self = self, let userAccel = capturedUserAccel else {
                     self?.isCalibrating = false
                     return
                 }
                 
-                // Set baseline to current userAcceleration (should be ~0 when still)
-                self.baselineX = userAccel.x
+                // Set baseline to current userAcceleration
                 self.baselineY = userAccel.y
+                self.baselineZ = userAccel.z  // Changed from baselineX to baselineZ
                 
                 self.isCalibrating = false
                 self.calibrationDone = true
                 
-                // Auto-hide checkmark after 1.5 seconds
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                     self.calibrationDone = false
                 }
