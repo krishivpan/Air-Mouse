@@ -13,7 +13,8 @@ final class PhoneSessionManager: NSObject, ObservableObject, WCSessionDelegate {
 
     static let shared = PhoneSessionManager()
 
-    @Published var lastGesture: AirMouseGesture?    // ⬅️ use the enum
+    @Published var lastGesture: AirMouseGesture?
+    @Published var isReachable: Bool = false   // ⬅️ NEW: is the Watch app reachable?
 
     private override init() {
         super.init()
@@ -29,6 +30,9 @@ final class PhoneSessionManager: NSObject, ObservableObject, WCSessionDelegate {
         let session = WCSession.default
         session.delegate = self
         session.activate()
+
+        // Initial value (may still be false until activation callback fires)
+        isReachable = session.isReachable
     }
 
     // MARK: - WCSessionDelegate
@@ -43,6 +47,11 @@ final class PhoneSessionManager: NSObject, ObservableObject, WCSessionDelegate {
         } else {
             print("Phone session activated with state: \(activationState.rawValue)")
         }
+
+        // Update reachability on activation
+        DispatchQueue.main.async {
+            self.isReachable = session.isReachable
+        }
     }
 
     func sessionDidBecomeInactive(_ session: WCSession) { }
@@ -51,10 +60,17 @@ final class PhoneSessionManager: NSObject, ObservableObject, WCSessionDelegate {
         WCSession.default.activate()
     }
 
+    // ⬇️ NEW: listen to reachability changes from the Watch
+    func sessionReachabilityDidChange(_ session: WCSession) {
+        DispatchQueue.main.async {
+            self.isReachable = session.isReachable
+            print("Watch reachability changed. isReachable = \(self.isReachable)")
+        }
+    }
+
     func session(_ session: WCSession, didReceiveMessage message: [String : Any]) {
         print("Received message from Watch: \(message)")
 
-        // ⬇️ use the shared key + convert to enum
         guard
             let gestureString = message[AirMouseKey.gesture] as? String,
             let gesture = AirMouseGesture(rawValue: gestureString)
