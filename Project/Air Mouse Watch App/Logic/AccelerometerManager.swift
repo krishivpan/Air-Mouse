@@ -23,82 +23,52 @@ class AccelerometerManager: ObservableObject {
     @Published var calibrationDone = false
     
     private var baselineY: Double = 0
-    private var baselineZ: Double = 0
-    
-    // MARK: - Velocity Tracking (integrated from acceleration)
-    private var velocityY: Double = 0
-    private var velocityZ: Double = 0
-    private var lastUpdateTime: Date = Date()
+    private var baselineZ: Double = 0  // Changed from baselineX to baselineZ
     
     // MARK: - Thresholds
-    private let accelerationThreshold: Double = 1.2  // Initial acceleration to start tracking
-    private let velocityThreshold: Double = 0.45     // ~27cm swipe over ~0.3s
+    private let threshold: Double = 1.2
     private let debounceInterval: TimeInterval = 0.35
     private var lastSwipeTime = Date.distantPast
-    
-    // Velocity decay - gradually reduce velocity when no significant acceleration
-    private let velocityDecay: Double = 0.92
     
     // MARK: - Start Device Motion (filters out gravity)
     func start() {
         guard motion.isDeviceMotionAvailable else { return }
         
         motion.deviceMotionUpdateInterval = 0.02
-        lastUpdateTime = Date()
         
         motion.startDeviceMotionUpdates(to: .main) { [weak self] data, _ in
             guard let self = self, let motion = data else { return }
             
-            let now = Date()
-            let dt = now.timeIntervalSince(self.lastUpdateTime)
-            self.lastUpdateTime = now
-            
             let userAccel = motion.userAcceleration
             
             // Apply baseline calibration
+            // Y-axis: up/down (toward top of screen)
+            // Z-axis: left/right (when hand is rotated 90° counterclockwise)
             let dy = userAccel.y - self.baselineY
             let dz = userAccel.z - self.baselineZ
             
-            // Integrate acceleration to get velocity (v = v0 + a*dt)
-            // Only integrate if acceleration is significant, otherwise decay
-            if abs(dy) > 0.3 {
-                self.velocityY += dy * dt
-            } else {
-                self.velocityY *= self.velocityDecay
-            }
-            
-            if abs(dz) > 0.3 {
-                self.velocityZ += dz * dt
-            } else {
-                self.velocityZ *= self.velocityDecay
-            }
-            
-            // Debounce check
+            let now = Date()
             guard now.timeIntervalSince(self.lastSwipeTime) > self.debounceInterval else { return }
             
-            let absVelY = abs(self.velocityY)
-            let absVelZ = abs(self.velocityZ)
+            let absY = abs(dy)
+            let absZ = abs(dz)
             
-            // Check if acceleration is above initial threshold AND velocity is sufficient
-            let absAccelY = abs(dy)
-            let absAccelZ = abs(dz)
-            
-            // Determine primary direction - only trigger if both acceleration and velocity thresholds met
-            if absVelZ > absVelY && absVelZ > self.velocityThreshold {
-                if self.detectRight && dz > self.accelerationThreshold && self.velocityZ > self.velocityThreshold {
+            // Determine primary direction (Y or Z) - only trigger the dominant axis
+            if absZ > absY {
+                // Horizontal movement dominant (Z-axis for left/right)
+                // When hand moves forward (away from body): Z increases -> RIGHT
+                // When hand moves backward (toward body): Z decreases -> LEFT
+                if self.detectRight && dz > self.threshold {
                     self.trigger(.right)
-                    self.velocityZ = 0  // Reset velocity after detection
-                } else if self.detectLeft && dz < -self.accelerationThreshold && self.velocityZ < -self.velocityThreshold {
+                } else if self.detectLeft && dz < -self.threshold {
                     self.trigger(.left)
-                    self.velocityZ = 0
                 }
-            } else if absVelY > absVelZ && absVelY > self.velocityThreshold {
-                if self.detectUp && dy > self.accelerationThreshold && self.velocityY > self.velocityThreshold {
+            } else {
+                // Vertical movement dominant (Y-axis for up/down)
+                if self.detectUp && dy > self.threshold {
                     self.trigger(.up)
-                    self.velocityY = 0
-                } else if self.detectDown && dy < -self.accelerationThreshold && self.velocityY < -self.velocityThreshold {
+                } else if self.detectDown && dy < -self.threshold {
                     self.trigger(.down)
-                    self.velocityY = 0
                 }
             }
         }
@@ -106,8 +76,6 @@ class AccelerometerManager: ObservableObject {
     
     func stop() {
         motion.stopDeviceMotionUpdates()
-        velocityY = 0
-        velocityZ = 0
     }
     
     // MARK: - Swipe Trigger
@@ -138,10 +106,6 @@ class AccelerometerManager: ObservableObject {
         calibrationCountdown = 3
         calibrationDone = false
         
-        // Reset velocities during calibration
-        velocityY = 0
-        velocityZ = 0
-        
         Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { timer in
             self.calibrationCountdown -= 1
             
@@ -169,12 +133,7 @@ class AccelerometerManager: ObservableObject {
                 
                 // Set baseline to current userAcceleration
                 self.baselineY = userAccel.y
-                self.baselineZ = userAccel.z
-                
-                // Reset velocities
-                self.velocityY = 0
-                self.velocityZ = 0
-                self.lastUpdateTime = Date()
+                self.baselineZ = userAccel.z  // Changed from baselineX to baselineZ
                 
                 self.isCalibrating = false
                 self.calibrationDone = true
