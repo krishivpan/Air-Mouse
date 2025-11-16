@@ -1,9 +1,6 @@
 //
 //  AirMouseCommunication.swift
 //  Air Mouse
-//
-//  Created by Rehan Jetha on 2025-11-15.
-//
 
 import Foundation
 
@@ -11,7 +8,7 @@ enum AirMouseKey {
     static let gesture = "gesture"
 }
 
-enum AirMouseGesture: String {
+enum AirMouseGesture: String, CaseIterable {
     case leftSwipe
     case rightSwipe
     case upSwipe
