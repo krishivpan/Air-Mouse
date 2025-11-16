@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5D0069602EC9962800AC736A /* AirMouseCommunication.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D4A799F2EC9215A0051B14F /* AirMouseCommunication.swift */; };
 		5D4A79A02EC9215B0051B14F /* AirMouseCommunication.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D4A799F2EC9215A0051B14F /* AirMouseCommunication.swift */; };
 		5D4A79A12EC921700051B14F /* AirMouseCommunication.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D4A799F2EC9215A0051B14F /* AirMouseCommunication.swift */; };
 		5DEA0EAF2EC8FB2F00BC991E /* Air Mouse Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 5DEA0EAE2EC8FB2F00BC991E /* Air Mouse Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -37,12 +38,18 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		5D00694F2EC9953100AC736A /* Air Mouse Mac App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Air Mouse Mac App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		5D4A799F2EC9215A0051B14F /* AirMouseCommunication.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirMouseCommunication.swift; sourceTree = "<group>"; };
 		5DEA0E8B2EC8FB2E00BC991E /* Air Mouse.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Air Mouse.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		5DEA0EAE2EC8FB2F00BC991E /* Air Mouse Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Air Mouse Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		5D0069502EC9953100AC736A /* Air Mouse Mac App */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "Air Mouse Mac App";
+			sourceTree = "<group>";
+		};
 		5DEA0E8D2EC8FB2E00BC991E /* Air Mouse */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = "Air Mouse";
@@ -56,6 +63,13 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		5D00694C2EC9953100AC736A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		5DEA0E882EC8FB2E00BC991E /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -79,6 +93,7 @@
 				5D4A799F2EC9215A0051B14F /* AirMouseCommunication.swift */,
 				5DEA0E8D2EC8FB2E00BC991E /* Air Mouse */,
 				5DEA0EB22EC8FB2F00BC991E /* Air Mouse Watch App */,
+				5D0069502EC9953100AC736A /* Air Mouse Mac App */,
 				5DEA0E8C2EC8FB2E00BC991E /* Products */,
 			);
 			sourceTree = "<group>";
@@ -88,6 +103,7 @@
 			children = (
 				5DEA0E8B2EC8FB2E00BC991E /* Air Mouse.app */,
 				5DEA0EAE2EC8FB2F00BC991E /* Air Mouse Watch App.app */,
+				5D00694F2EC9953100AC736A /* Air Mouse Mac App.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -95,6 +111,28 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		5D00694E2EC9953100AC736A /* Air Mouse Mac App */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5D0069572EC9953200AC736A /* Build configuration list for PBXNativeTarget "Air Mouse Mac App" */;
+			buildPhases = (
+				5D00694B2EC9953100AC736A /* Sources */,
+				5D00694C2EC9953100AC736A /* Frameworks */,
+				5D00694D2EC9953100AC736A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				5D0069502EC9953100AC736A /* Air Mouse Mac App */,
+			);
+			name = "Air Mouse Mac App";
+			packageProductDependencies = (
+			);
+			productName = "Air Mouse Mac App";
+			productReference = 5D00694F2EC9953100AC736A /* Air Mouse Mac App.app */;
+			productType = "com.apple.product-type.application";
+		};
 		5DEA0E8A2EC8FB2E00BC991E /* Air Mouse */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 5DEA0ED52EC8FB3000BC991E /* Build configuration list for PBXNativeTarget "Air Mouse" */;
@@ -151,6 +189,9 @@
 				LastSwiftUpdateCheck = 2610;
 				LastUpgradeCheck = 2610;
 				TargetAttributes = {
+					5D00694E2EC9953100AC736A = {
+						CreatedOnToolsVersion = 26.1.1;
+					};
 					5DEA0E8A2EC8FB2E00BC991E = {
 						CreatedOnToolsVersion = 26.1.1;
 					};
@@ -175,11 +216,19 @@
 			targets = (
 				5DEA0E8A2EC8FB2E00BC991E /* Air Mouse */,
 				5DEA0EAD2EC8FB2F00BC991E /* Air Mouse Watch App */,
+				5D00694E2EC9953100AC736A /* Air Mouse Mac App */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		5D00694D2EC9953100AC736A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		5DEA0E892EC8FB2E00BC991E /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -197,6 +246,14 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		5D00694B2EC9953100AC736A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5D0069602EC9962800AC736A /* AirMouseCommunication.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		5DEA0E872EC8FB2E00BC991E /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -224,6 +281,76 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		5D0069582EC9953200AC736A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8NR2988TH3;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Air Mouse";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.6;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "KP-RJ.Air-Mouse-Mac-App";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		5D0069592EC9953200AC736A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8NR2988TH3;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Air Mouse";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.6;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "KP-RJ.Air-Mouse-Mac-App";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 		5DEA0ECF2EC8FB3000BC991E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -350,7 +477,7 @@
 				DEVELOPMENT_TEAM = 8NR2988TH3;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "Air Mouse (watchOS)";
+				INFOPLIST_KEY_CFBundleDisplayName = "Air Mouse";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = "KP-RJ.Air-Mouse";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -383,7 +510,7 @@
 				DEVELOPMENT_TEAM = 8NR2988TH3;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "Air Mouse (watchOS)";
+				INFOPLIST_KEY_CFBundleDisplayName = "Air Mouse";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = "KP-RJ.Air-Mouse";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -417,7 +544,7 @@
 				DEVELOPMENT_TEAM = 8NR2988TH3;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "Air Mouse (iOS)";
+				INFOPLIST_KEY_CFBundleDisplayName = "Air Mouse";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -456,7 +583,7 @@
 				DEVELOPMENT_TEAM = 8NR2988TH3;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "Air Mouse (iOS)";
+				INFOPLIST_KEY_CFBundleDisplayName = "Air Mouse";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -489,6 +616,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		5D0069572EC9953200AC736A /* Build configuration list for PBXNativeTarget "Air Mouse Mac App" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5D0069582EC9953200AC736A /* Debug */,
+				5D0069592EC9953200AC736A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		5DEA0E862EC8FB2E00BC991E /* Build configuration list for PBXProject "Air Mouse" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

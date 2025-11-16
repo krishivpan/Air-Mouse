@@ -1,16 +1,16 @@
 //
 //  ContentView.swift
-//  Air Mouse
+//  Air Mouse (iOS)
 //
 //  Created by Rehan Jetha on 2025-11-15.
 //
 
 import SwiftUI
-import UIKit   // for opening Settings
+import UIKit   // for opening Settings app
 
 struct ContentView: View {
     @EnvironmentObject private var phoneSession: PhoneSessionManager
-    @State private var isMacConnected: Bool = false   // dummy Mac connection for now
+    @State private var showSettingsAlert: Bool = false
 
     var body: some View {
         ZStack {
@@ -87,28 +87,34 @@ private extension ContentView {
 
                 connectionRow(
                     label: "MacBook",
-                    isConnected: isMacConnected,
+                    isConnected: phoneSession.isMacConnected,
                     iconName: "laptopcomputer"
                 )
             }
 
-            // Settings button (simple + compact, label unchanged)
-            Button(action: openBluetoothSettings) {
-                HStack(spacing: 8) {
-                    Image(systemName: "bolt.horizontal.circle.fill")
-                    Text("Open Bluetooth Settings")
-                        .font(.subheadline)
-                        .fontWeight(.medium)
+            // Settings button (simple + compact)
+            HStack {
+                Button(action: {
+                    showSettingsAlert = true
+                }) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "gearshape.fill")
+                        Text("Open Settings")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                    }
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, 12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.blue.opacity(0.25))
+                    )
                 }
-                .padding(.vertical, 8)
-                .padding(.horizontal, 12)
-                .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.blue.opacity(0.25))
-                )
+                .buttonStyle(.plain)
+                .foregroundColor(.blue)
+
+                Spacer()
             }
-            .buttonStyle(.plain)
-            .foregroundColor(.blue)
         }
         .padding()
         .background(
@@ -125,14 +131,27 @@ private extension ContentView {
                 )
                 .shadow(color: Color.black.opacity(0.35), radius: 14, x: 0, y: 10)
         )
+        // Alert to open Settings
+        .alert("Open Settings?", isPresented: $showSettingsAlert) {
+            Button("Settings") {
+                openSettings()
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("You’ll be taken to the iOS Settings app.")
+        }
     }
 
     func connectionRow(label: String, isConnected: Bool, iconName: String) -> some View {
         HStack {
             HStack(spacing: 8) {
+
                 Image(systemName: iconName)
                     .font(.subheadline)
                     .foregroundColor(.gray)
+                    .frame(width: 22, alignment: .leading)
+                    .offset(x: iconName == "laptopcomputer" ? -3 : 0)
+
                 Text(label)
                     .font(.subheadline)
                     .foregroundColor(.gray)
@@ -186,7 +205,7 @@ private extension ContentView {
 
                         Spacer()
 
-                        // Simple activity indicator
+                        // Simple “live” indicator
                         ZStack {
                             Circle()
                                 .stroke(Color.blue.opacity(0.3), lineWidth: 6)
@@ -204,8 +223,7 @@ private extension ContentView {
     }
 
     func prettyGestureName(_ gesture: AirMouseGesture?) -> String {
-        // More professional default
-        guard let gesture = gesture else { return "Awaiting Gesture…" }
+        guard let gesture = gesture else { return "Listening for Gestures" }
 
         switch gesture {
         case .leftSwipe:      return "Left Swipe"
@@ -219,11 +237,16 @@ private extension ContentView {
         }
     }
 
-    func openBluetoothSettings() {
-        // Open Settings app (label kept as "Open Bluetooth Settings")
-        if let appSettings = URL(string: UIApplication.openSettingsURLString),
-           UIApplication.shared.canOpenURL(appSettings) {
-            UIApplication.shared.open(appSettings, options: [:], completionHandler: nil)
+    // Opens the app’s Settings page in the iOS Settings app
+    func openSettings() {
+        guard let settingsUrl = URL(string: UIApplication.openSettingsURLString) else {
+            return
+        }
+
+        if UIApplication.shared.canOpenURL(settingsUrl) {
+            UIApplication.shared.open(settingsUrl, options: [:]) { success in
+                print("Settings opened: \(success)")
+            }
         }
     }
 }
