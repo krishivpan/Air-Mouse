@@ -1,44 +1,43 @@
-//
-//  SettingsPage.swift
-//  Air Mouse
-//
-//  Created by Krishiv Panchal on 2025-11-15.
-//
-
 import SwiftUI
 
 struct SettingsPage: View {
-    // State for toggles (UI only, not connected to functionality yet)
-    @State private var detectLeftSwipe = true
-    @State private var detectRightSwipe = true
-    @State private var detectUpSwipe = true
-    @State private var detectDownSwipe = true
+    @EnvironmentObject var accel: AccelerometerManager
 
     var body: some View {
-        NavigationStack {
-            Form {
-                Section(header: Text("Gesture Detection")
-                    .font(.headline)
-                    .foregroundColor(.primary)) {
+        Form {
+            Section("Gesture Detection") {
+                Toggle("Left Swipe", isOn: $accel.detectLeft)
+                Toggle("Right Swipe", isOn: $accel.detectRight)
+                Toggle("Up Swipe", isOn: $accel.detectUp)
+                Toggle("Down Swipe", isOn: $accel.detectDown)
+            }
 
-                    Toggle("Detect Left Swipe", isOn: $detectLeftSwipe)
-                        .toggleStyle(SwitchToggleStyle(tint: .green))
+            Section("Calibration") {
+                if accel.isCalibrating {
+                    HStack {
+                        Spacer()
+                        VStack(spacing: 6) {
+                            Text("Hold still...")
+                                .font(.headline)
 
-                    Toggle("Detect Right Swipe", isOn: $detectRightSwipe)
-                        .toggleStyle(SwitchToggleStyle(tint: .green))
-
-                    Toggle("Detect Up Swipe", isOn: $detectUpSwipe)
-                        .toggleStyle(SwitchToggleStyle(tint: .green))
-
-                    Toggle("Detect Down Swipe", isOn: $detectDownSwipe)
-                        .toggleStyle(SwitchToggleStyle(tint: .green))
+                            Text("\(accel.calibrationCountdown)")
+                                .font(.system(size: 32, weight: .bold))
+                                .foregroundColor(.blue)
+                        }
+                        Spacer()
+                    }
+                } else {
+                    Button("Recalibrate Neutral Position") {
+                        accel.recalibrate()
+                    }
                 }
             }
-            .navigationTitle("Settings")
         }
+        .navigationTitle("Settings")
     }
 }
 
 #Preview {
     SettingsPage()
+        .environmentObject(AccelerometerManager())
 }
