@@ -23,7 +23,7 @@ class AccelerometerManager: ObservableObject {
     @Published var calibrationDone = false
     
     private var baselineY: Double = 0
-    private var baselineZ: Double = 0  // Changed from baselineX to baselineZ
+    private var baselineZ: Double = 0
     
     // MARK: - Thresholds
     private let threshold: Double = 1.2
@@ -42,8 +42,6 @@ class AccelerometerManager: ObservableObject {
             let userAccel = motion.userAcceleration
             
             // Apply baseline calibration
-            // Y-axis: up/down (toward top of screen)
-            // Z-axis: left/right (when hand is rotated 90° counterclockwise)
             let dy = userAccel.y - self.baselineY
             let dz = userAccel.z - self.baselineZ
             
@@ -53,22 +51,26 @@ class AccelerometerManager: ObservableObject {
             let absY = abs(dy)
             let absZ = abs(dz)
             
-            // Determine primary direction (Y or Z) - only trigger the dominant axis
-            if absZ > absY {
-                // Horizontal movement dominant (Z-axis for left/right)
-                // When hand moves forward (away from body): Z increases -> RIGHT
-                // When hand moves backward (toward body): Z decreases -> LEFT
-                if self.detectRight && dz > self.threshold {
+            // Check each direction independently
+            // Z-axis: left/right detection
+            if absZ > self.threshold {
+                if self.detectRight && dz > self.threshold && absZ > absY {
                     self.trigger(.right)
-                } else if self.detectLeft && dz < -self.threshold {
+                    return
+                } else if self.detectLeft && dz < -self.threshold && absZ > absY {
                     self.trigger(.left)
+                    return
                 }
-            } else {
-                // Vertical movement dominant (Y-axis for up/down)
-                if self.detectUp && dy > self.threshold {
+            }
+            
+            // Y-axis: up/down detection
+            if absY > self.threshold {
+                if self.detectUp && dy > self.threshold && absY > absZ {
                     self.trigger(.up)
-                } else if self.detectDown && dy < -self.threshold {
+                    return
+                } else if self.detectDown && dy < -self.threshold && absY > absZ {
                     self.trigger(.down)
+                    return
                 }
             }
         }
@@ -133,7 +135,7 @@ class AccelerometerManager: ObservableObject {
                 
                 // Set baseline to current userAcceleration
                 self.baselineY = userAccel.y
-                self.baselineZ = userAccel.z  // Changed from baselineX to baselineZ
+                self.baselineZ = userAccel.z
                 
                 self.isCalibrating = false
                 self.calibrationDone = true

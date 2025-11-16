@@ -118,7 +118,7 @@ struct StartPage: View {
             )
             .ignoresSafeArea()
             
-            VStack(spacing: 14) {
+            VStack(spacing: 8) {
                 
                 Spacer()
 
@@ -134,11 +134,6 @@ struct StartPage: View {
                             )
                         )
                         .padding(.top, 8)
-                        .onTapGesture { watchSession.sendGesture(.tap) }
-                        .onLongPressGesture(minimumDuration: 0.5) {
-                            // Force touch / long press to calibrate
-                            triggerCalibration()
-                        }
 
                     HStack(spacing: 6) {
                         Circle()
@@ -176,6 +171,7 @@ struct StartPage: View {
                 )
 
                 Spacer()
+                    .frame(height: 12)
 
                 // MARK: Gesture Detection Card with seamless animation
                 ZStack {
@@ -186,6 +182,12 @@ struct StartPage: View {
                     } else if currentGesture == nil {
                         breathingCircle()
                             .transition(.scale.combined(with: .opacity))
+                            .onTapGesture {
+                                handleTap()
+                            }
+                            .onLongPressGesture(minimumDuration: 0.5) {
+                                triggerCalibration()
+                            }
                     } else {
                         gestureIcon(for: currentGesture!)
                             .transition(.scale(scale: 1.2).combined(with: .opacity))
@@ -301,6 +303,8 @@ struct StartPage: View {
     
     private func getIconData(for gesture: AirMouseGesture) -> (name: String, color: Color) {
         switch gesture {
+        case .tap:
+            return ("hand.tap.fill", .cyan)
         case .leftSwipe:
             return ("arrow.left.circle.fill", .green)
         case .rightSwipe:
@@ -316,6 +320,7 @@ struct StartPage: View {
     
     private func gestureColor(for gesture: AirMouseGesture) -> Color {
         switch gesture {
+        case .tap: return .cyan
         case .leftSwipe: return .green
         case .rightSwipe: return .blue
         case .upSwipe: return .orange
@@ -393,6 +398,16 @@ struct StartPage: View {
             currentGesture = nil
         }
         accel.recalibrate()
+    }
+    
+    private func handleTap() {
+        WKInterfaceDevice.current().play(.click)
+        
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+            currentGesture = .tap
+        }
+        watchSession.sendGesture(.tap)
+        resetGesture()
     }
 }
 
