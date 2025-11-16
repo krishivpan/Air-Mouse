@@ -11,52 +11,82 @@ import Combine
 
 class AccelerometerManager: ObservableObject {
     private let motion = CMMotionManager()
-    @Published var x: Double = 0
-    @Published var y: Double = 0
-    @Published var z: Double = 0
     
+    // MARK: - Published properties for SwiftUI
     @Published var detectedSwipeLeft = false
     @Published var detectedSwipeRight = false
+    @Published var detectedSwipeUp = false
+    @Published var detectedSwipeDown = false
     
-    private let leftSwipeThreshold = -0.8  // tweak this until it feels right
-    private let rightSwipeThreshold = 1.0  //
+    // MARK: - Thresholds (tweak based on wrist motion)
+    private let leftSwipeThreshold: Double = -0.8
+    private let rightSwipeThreshold: Double = 0.8
+    private let upSwipeThreshold: Double = 0.8
+    private let downSwipeThreshold: Double = -0.8
     
+    // MARK: - Debounce to prevent multiple triggers
+    private var lastSwipeTime: Date = Date.distantPast
+    private let debounceInterval: TimeInterval = 0.3
+    
+    // MARK: - Start accelerometer
     func start() {
         motion.accelerometerUpdateInterval = 0.02
         
-        motion.startAccelerometerUpdates(to: .main) {
+        guard motion.isAccelerometerAvailable else { return }
+        
+        motion.startAccelerometerUpdates(to: .main) { [weak self] data, _ in
+            guard let self = self, let accel = data?.acceleration else { return }
             
-            data, error in guard let accel = data?.acceleration else { return }
+            let now = Date()
+            guard now.timeIntervalSince(self.lastSwipeTime) > self.debounceInterval else { return }
             
-            self.x = accel.x
-            self.y = accel.y
-            self.z = accel.z
-            
-            self.detectSwipeLeft(from: accel.x)
-        }
-    }
-    
-    func stop() {
-        motion.stopAccelerometerUpdates()
-    }
-    
-    private func detectSwipeLeft(from xValue: Double) {
-        if xValue < leftSwipeThreshold {
-            detectedSwipeLeft = true
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                self.detectedSwipeLeft = false
+            // Detect swipes
+            if accel.x < self.leftSwipeThreshold {
+                self.triggerSwipe(.left)
+            } else if accel.x > self.rightSwipeThreshold {
+                self.triggerSwipe(.right)
+            } else if accel.y > self.upSwipeThreshold {
+                self.triggerSwipe(.up)
+            } else if accel.y < self.downSwipeThreshold {
+                self.triggerSwipe(.down)
             }
         }
     }
     
-    private func detectSwipeRight(from xValue: Double) {
-        if xValue > rightSwipeThreshold {
-            detectedSwipeRight = true
-        }
+    // MARK: - Stop accelerometer
+    func stop() {
+        motion.stopAccelerometerUpdates()
+    }
+    
+    // MARK: - Swipe detection
+    private enum SwipeDirection {
+        case left, right, up, down
+    }
+    
+    private func triggerSwipe(_ direction: SwipeDirection) {
+        lastSwipeTime = Date()
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            self.detectedSwipeRight = false
+        switch direction {
+        case .left:
+            detectedSwipeLeft = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
+                self?.detectedSwipeLeft = false
+            }
+        case .right:
+            detectedSwipeRight = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
+                self?.detectedSwipeRight = false
+            }
+        case .up:
+            detectedSwipeUp = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
+                self?.detectedSwipeUp = false
+            }
+        case .down:
+            detectedSwipeDown = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
+                self?.detectedSwipeDown = false
+            }
         }
     }
 }

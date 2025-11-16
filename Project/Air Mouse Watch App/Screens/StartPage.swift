@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct StartPage: View {
-    // Provided by Air_Mouse_Watch_AppApp via .environmentObject(watchSession)
     @EnvironmentObject private var watchSession: WatchSessionManager
     @StateObject private var accel = AccelerometerManager()
     
@@ -23,7 +22,6 @@ struct StartPage: View {
                         .bold()
                         .foregroundColor(Color("Text"))
                         .onTapGesture {
-                            // Send a tap gesture to iPhone when user taps the title
                             watchSession.sendGesture(.tap)
                         }
                     
@@ -43,42 +41,86 @@ struct StartPage: View {
                 .background(
                     RoundedRectangle(cornerRadius: 16)
                         .fill(Color("CardBackground"))
-                        .shadow(
-                            color: Color.black.opacity(0.1),
-                            radius: 4,
-                            x: 0,
-                            y: 2
-                        )
+                        .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
                 )
                 
-                // MARK: - Swipe Detection Card
+                // MARK: - Gesture Detection Card
                 ZStack {
-                    // Breathing circle in the background when not actively detecting a swipe
-                    if !accel.detectedSwipeLeft {
+                    // Show breathing circle when no swipe is detected
+                    if !accel.detectedSwipeLeft &&
+                        !accel.detectedSwipeRight &&
+                        !accel.detectedSwipeUp &&
+                        !accel.detectedSwipeDown {
+                        
                         BreathingCircle()
                             .frame(width: 60, height: 60)
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    } else {
-                        // You can customize what appears when a swipe is detected
-                        Text("Left swipe detected")
-                            .font(.caption)
-                            .foregroundColor(Color("Text"))
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
                     }
+                    
+                    // Show detected gesture indicators
+                    VStack(spacing: 4) {
+                        if accel.detectedSwipeLeft {
+                            HStack {
+                                Image(systemName: "arrow.left.circle.fill")
+                                    .foregroundColor(.green)
+                                Text("Left Swipe Detected")
+                                    .foregroundColor(Color("Text"))
+                            }
+                        }
+                        if accel.detectedSwipeRight {
+                            HStack {
+                                Image(systemName: "arrow.right.circle.fill")
+                                    .foregroundColor(.blue)
+                                Text("Right Swipe Detected")
+                                    .foregroundColor(Color("Text"))
+                            }
+                        }
+                        if accel.detectedSwipeUp {
+                            HStack {
+                                Image(systemName: "arrow.up.circle.fill")
+                                    .foregroundColor(.orange)
+                                Text("Up Swipe Detected")
+                                    .foregroundColor(Color("Text"))
+                            }
+                        }
+                        if accel.detectedSwipeDown {
+                            HStack {
+                                Image(systemName: "arrow.down.circle.fill")
+                                    .foregroundColor(.red)
+                                Text("Down Swipe Detected")
+                                    .foregroundColor(Color("Text"))
+                            }
+                        }
+                    }
+                    .animation(.spring(), value: accel.detectedSwipeLeft)
+                    .animation(.spring(), value: accel.detectedSwipeRight)
+                    .animation(.spring(), value: accel.detectedSwipeUp)
+                    .animation(.spring(), value: accel.detectedSwipeDown)
                 }
                 .frame(maxWidth: .infinity, minHeight: 80)
-                .onAppear {
-                    accel.start()
+                .padding()
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(Color("CardBackground"))
+                        .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+                )
+                .onAppear { accel.start() }
+                .onDisappear { accel.stop() }
+                
+                // MARK: - Swipe Handling 
+                .onChange(of: accel.detectedSwipeLeft) { oldValue, newValue in
+                    if newValue { watchSession.sendGesture(.leftSwipe) }
                 }
-                .onDisappear {
-                    accel.stop()
+                .onChange(of: accel.detectedSwipeRight) { oldValue, newValue in
+                    if newValue { watchSession.sendGesture(.rightSwipe) }
                 }
-                .onChange(of: accel.detectedSwipeLeft) {
-                    if accel.detectedSwipeLeft {
-                        watchSession.sendGesture(.leftSwipe)
-                        print("LEFT SWIPE SENT TO IPHONE")
-                    }
+                .onChange(of: accel.detectedSwipeUp) { oldValue, newValue in
+                    if newValue { watchSession.sendGesture(.upSwipe) }
                 }
+                .onChange(of: accel.detectedSwipeDown) { oldValue, newValue in
+                    if newValue { watchSession.sendGesture(.downSwipe) }
+                }
+
                 
                 Spacer()
             }
@@ -88,8 +130,6 @@ struct StartPage: View {
 }
 
 #Preview {
-    // For preview purposes; may not fully work because WatchConnectivity isn't
-    // available in previews. Comment out if preview crashes.
     StartPage()
         .environmentObject(WatchSessionManager.shared)
 }
