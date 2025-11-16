@@ -26,7 +26,7 @@ class AccelerometerManager: ObservableObject {
     private var baselineY: Double = 0
     
     // MARK: - Thresholds (increased for user acceleration)
-    private let threshold: Double = 1.5  // Higher threshold for actual movement
+    private let threshold: Double = 1.2  // Lowered threshold for better left detection
     private let debounceInterval: TimeInterval = 0.35
     private var lastSwipeTime = Date.distantPast
     
@@ -50,21 +50,25 @@ class AccelerometerManager: ObservableObject {
             let now = Date()
             guard now.timeIntervalSince(self.lastSwipeTime) > self.debounceInterval else { return }
             
-            // LEFT (negative X)
-            if self.detectLeft && dx < -self.threshold {
-                self.trigger(.left)
-            }
-            // RIGHT (positive X)
-            if self.detectRight && dx > self.threshold {
-                self.trigger(.right)
-            }
-            // UP (positive Y)
-            if self.detectUp && dy > self.threshold {
-                self.trigger(.up)
-            }
-            // DOWN (negative Y)
-            if self.detectDown && dy < -self.threshold {
-                self.trigger(.down)
+            // Use absolute values to check if movement exceeds threshold
+            let absX = abs(dx)
+            let absY = abs(dy)
+            
+            // Determine primary direction (X or Y) - only trigger the dominant axis
+            if absX > absY {
+                // Horizontal movement dominant
+                if self.detectLeft && dx < -self.threshold {
+                    self.trigger(.left)
+                } else if self.detectRight && dx > self.threshold {
+                    self.trigger(.right)
+                }
+            } else {
+                // Vertical movement dominant
+                if self.detectUp && dy > self.threshold {
+                    self.trigger(.up)
+                } else if self.detectDown && dy < -self.threshold {
+                    self.trigger(.down)
+                }
             }
         }
     }

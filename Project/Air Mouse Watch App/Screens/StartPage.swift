@@ -125,14 +125,15 @@ struct StartPage: View {
                 // MARK: Header Card
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Gestures")
-                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .font(.system(size: 22, weight: .bold, design: .rounded))
                         .foregroundStyle(
                             LinearGradient(
-                                colors: [Color.cyan, Color.blue, Color.purple],
+                                colors: [Color.blue, Color.blue.opacity(0.7)],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
                         )
+                        .padding(.top, 8)
                         .onTapGesture { watchSession.sendGesture(.tap) }
                         .onLongPressGesture(minimumDuration: 0.5) {
                             // Force touch / long press to calibrate
@@ -333,34 +334,62 @@ struct StartPage: View {
     
     // MARK: - Calibration Views
     private var calibratingView: some View {
-        VStack(spacing: 8) {
-            Text("Hold still...")
-                .font(.system(size: 13, weight: .medium))
-                .foregroundColor(.white)
-            
-            Text("\(accel.calibrationCountdown)")
-                .font(.system(size: 32, weight: .bold))
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [Color.cyan, Color.blue],
-                        startPoint: .leading,
-                        endPoint: .trailing
+        VStack(spacing: 10) {
+            // Pulsing circle indicator
+            ZStack {
+                Circle()
+                    .stroke(Color.cyan.opacity(0.3), lineWidth: 3)
+                    .frame(width: 60, height: 60)
+                
+                Circle()
+                    .stroke(
+                        LinearGradient(
+                            colors: [Color.cyan, Color.blue],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 3
                     )
-                )
+                    .frame(width: 60, height: 60)
+                    .scaleEffect(accel.calibrationCountdown == 3 ? 0.8 : 1.0)
+                    .animation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true), value: accel.calibrationCountdown)
+                
+                Text("\(accel.calibrationCountdown)")
+                    .font(.system(size: 28, weight: .bold))
+                    .foregroundColor(.white)
+            }
+            
+            Text("Hold still...")
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(.gray)
         }
         .transition(.scale.combined(with: .opacity))
     }
     
     private var calibrationDoneView: some View {
-        Image(systemName: "checkmark.circle.fill")
-            .font(.system(size: 50))
-            .foregroundColor(.green)
-            .transition(.scale.combined(with: .opacity))
+        VStack(spacing: 8) {
+            Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: 55))
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [Color.green, Color.green.opacity(0.7)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .scaleEffect(accel.calibrationDone ? 1.0 : 0.5)
+                .animation(.spring(response: 0.5, dampingFraction: 0.6), value: accel.calibrationDone)
+            
+            Text("Calibrated!")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.green)
+        }
+        .transition(.scale.combined(with: .opacity))
     }
     
     private func triggerCalibration() {
         WKInterfaceDevice.current().play(.start)
-        withAnimation {
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
             currentGesture = nil
         }
         accel.recalibrate()
