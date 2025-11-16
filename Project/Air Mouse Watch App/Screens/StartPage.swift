@@ -11,7 +11,7 @@ struct StartPage: View {
     @StateObject private var watchSession = WatchSessionManager.shared
     @State private var isConnected = false;
     @StateObject private var accel = AccelerometerManager()
-
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             VStack {
@@ -43,6 +43,7 @@ struct StartPage: View {
                     .padding()
                 
                 if accel.detectedSwipeLeft {
+                    
                     Text("Swipe Left Detected!")
                         .foregroundColor(.green)
                 } else {
@@ -56,15 +57,22 @@ struct StartPage: View {
             .onDisappear {
                 accel.stop()
             }
+            .onChange(of: accel.detectedSwipeLeft) {
+                if accel.detectedSwipeLeft {
+                    watchSession.sendGesture(.leftSwipe)
+                    print("LEFT SWIPE SENT TO IPHONE")
+                }
+            }
             
-//            HStack {
-//                GestureButton(title: "Click Me", action: {watchSession.sendGesture(.tap) })
-//            }
+            //            HStack {
+            //                GestureButton(title: "Click Me", action: {watchSession.sendGesture(.tap) })
+            //            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
     }
 }
+
 
 
 #Preview {

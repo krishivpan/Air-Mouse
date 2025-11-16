@@ -18,4 +18,6 @@ enum AirMouseGesture: String {
     case doubleClench
     case pinch
     case doublePinch
+    case leftSwipe
+    
 }

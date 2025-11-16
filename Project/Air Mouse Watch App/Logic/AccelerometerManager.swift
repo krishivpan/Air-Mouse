@@ -16,9 +16,10 @@ class AccelerometerManager: ObservableObject {
     @Published var z: Double = 0
     
     @Published var detectedSwipeLeft = false
+    @Published var detectedSwipeRight = false
     
-    private let swipeThreshold = -1.2  // Tweak this until it feels right
-    
+    private let leftSwipeThreshold = -1.2  // tweak this until it feels right
+    private let rightSwipeThreshold = 1.0  //
     
     func start() {
         motion.accelerometerUpdateInterval = 0.02
@@ -32,6 +33,7 @@ class AccelerometerManager: ObservableObject {
             self.z = accel.z
             
             self.detectSwipeLeft(from: accel.x)
+            self.detectSwipeRight(from: accel.x)
         }
     }
     
@@ -40,12 +42,22 @@ class AccelerometerManager: ObservableObject {
     }
     
     private func detectSwipeLeft(from xValue: Double) {
-        if xValue < swipeThreshold {
+        if xValue < leftSwipeThreshold {
             detectedSwipeLeft = true
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                 self.detectedSwipeLeft = false
             }
+        }
+    }
+    
+    private func detectSwipeRight(from xValue: Double) {
+        if xValue > rightSwipeThreshold {
+            detectedSwipeRight = true
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            self.detectedSwipeRight = false
         }
     }
 }
