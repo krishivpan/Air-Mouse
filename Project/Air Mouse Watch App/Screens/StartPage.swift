@@ -44,58 +44,51 @@ struct StartPage: View {
                         .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
                 )
                 
-                // MARK: - Gesture Detection Card
+                // MARK: - Swipe Detection Card
                 ZStack {
-                    // Show breathing circle when no swipe is detected
+                    // Breathing circle when no swipe detected
                     if !accel.detectedSwipeLeft &&
-                        !accel.detectedSwipeRight &&
-                        !accel.detectedSwipeUp &&
-                        !accel.detectedSwipeDown {
+                       !accel.detectedSwipeRight &&
+                       !accel.detectedSwipeUp &&
+                       !accel.detectedSwipeDown {
                         
                         BreathingCircle()
                             .frame(width: 60, height: 60)
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                     }
                     
-                    // Show detected gesture indicators
-                    VStack(spacing: 4) {
-                        if accel.detectedSwipeLeft {
-                            HStack {
-                                Image(systemName: "arrow.left.circle.fill")
-                                    .foregroundColor(.green)
-                                Text("Left Swipe Detected")
-                                    .foregroundColor(Color("Text"))
-                            }
-                        }
-                        if accel.detectedSwipeRight {
-                            HStack {
-                                Image(systemName: "arrow.right.circle.fill")
-                                    .foregroundColor(.blue)
-                                Text("Right Swipe Detected")
-                                    .foregroundColor(Color("Text"))
-                            }
-                        }
-                        if accel.detectedSwipeUp {
-                            HStack {
-                                Image(systemName: "arrow.up.circle.fill")
-                                    .foregroundColor(.orange)
-                                Text("Up Swipe Detected")
-                                    .foregroundColor(Color("Text"))
-                            }
-                        }
-                        if accel.detectedSwipeDown {
-                            HStack {
-                                Image(systemName: "arrow.down.circle.fill")
-                                    .foregroundColor(.red)
-                                Text("Down Swipe Detected")
-                                    .foregroundColor(Color("Text"))
-                            }
-                        }
+                    // Swipe animations
+                    if accel.detectedSwipeLeft {
+                        Image(systemName: "arrow.left.circle.fill")
+                            .font(.system(size: 40))
+                            .foregroundColor(.green)
+                            .transition(.move(edge: .leading))
+                            .animation(.easeOut(duration: 0.4), value: accel.detectedSwipeLeft)
                     }
-                    .animation(.spring(), value: accel.detectedSwipeLeft)
-                    .animation(.spring(), value: accel.detectedSwipeRight)
-                    .animation(.spring(), value: accel.detectedSwipeUp)
-                    .animation(.spring(), value: accel.detectedSwipeDown)
+                    
+                    if accel.detectedSwipeRight {
+                        Image(systemName: "arrow.right.circle.fill")
+                            .font(.system(size: 40))
+                            .foregroundColor(.blue)
+                            .transition(.move(edge: .trailing))
+                            .animation(.easeOut(duration: 0.4), value: accel.detectedSwipeRight)
+                    }
+                    
+                    if accel.detectedSwipeUp {
+                        Image(systemName: "arrow.up.circle.fill")
+                            .font(.system(size: 40))
+                            .foregroundColor(.orange)
+                            .transition(.move(edge: .top))
+                            .animation(.easeOut(duration: 0.4), value: accel.detectedSwipeUp)
+                    }
+                    
+                    if accel.detectedSwipeDown {
+                        Image(systemName: "arrow.down.circle.fill")
+                            .font(.system(size: 40))
+                            .foregroundColor(.red)
+                            .transition(.move(edge: .bottom))
+                            .animation(.easeOut(duration: 0.4), value: accel.detectedSwipeDown)
+                    }
                 }
                 .frame(maxWidth: .infinity, minHeight: 80)
                 .padding()
@@ -107,21 +100,20 @@ struct StartPage: View {
                 .onAppear { accel.start() }
                 .onDisappear { accel.stop() }
                 
-                // MARK: - Swipe Handling 
-                .onChange(of: accel.detectedSwipeLeft) { oldValue, newValue in
+                // MARK: - Swipe Handling using modern onChange
+                .onChange(of: accel.detectedSwipeLeft) { _, newValue in
                     if newValue { watchSession.sendGesture(.leftSwipe) }
                 }
-                .onChange(of: accel.detectedSwipeRight) { oldValue, newValue in
+                .onChange(of: accel.detectedSwipeRight) { _, newValue in
                     if newValue { watchSession.sendGesture(.rightSwipe) }
                 }
-                .onChange(of: accel.detectedSwipeUp) { oldValue, newValue in
+                .onChange(of: accel.detectedSwipeUp) { _, newValue in
                     if newValue { watchSession.sendGesture(.upSwipe) }
                 }
-                .onChange(of: accel.detectedSwipeDown) { oldValue, newValue in
+                .onChange(of: accel.detectedSwipeDown) { _, newValue in
                     if newValue { watchSession.sendGesture(.downSwipe) }
                 }
 
-                
                 Spacer()
             }
             .padding()
