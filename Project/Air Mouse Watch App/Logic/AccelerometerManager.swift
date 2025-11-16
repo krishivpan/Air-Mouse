@@ -18,7 +18,7 @@ class AccelerometerManager: ObservableObject {
     @Published var detectedSwipeLeft = false
     @Published var detectedSwipeRight = false
     
-    private let leftSwipeThreshold = -1.2  // tweak this until it feels right
+    private let leftSwipeThreshold = -0.8  // tweak this until it feels right
     private let rightSwipeThreshold = 1.0  //
     
     func start() {
@@ -33,7 +33,6 @@ class AccelerometerManager: ObservableObject {
             self.z = accel.z
             
             self.detectSwipeLeft(from: accel.x)
-            self.detectSwipeRight(from: accel.x)
         }
     }
     
