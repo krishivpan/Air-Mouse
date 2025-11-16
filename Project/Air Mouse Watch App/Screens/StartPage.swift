@@ -9,73 +9,67 @@ import SwiftUI
 
 struct StartPage: View {
     @StateObject private var watchSession = WatchSessionManager.shared
-    @State private var isConnected = false;
     @StateObject private var accel = AccelerometerManager()
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            VStack {
-                Text("Gestures")
-                    .font(.title2)
-                    .foregroundColor(Color("Text"))
-                    .frame(maxWidth: .infinity, alignment: .leading)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
                 
-                
-                
-                HStack(spacing: 6) {
-                    // Circle indicator
-                    Image(systemName: watchSession.isReachable ? "circle.fill" : "circle")
-                        .foregroundColor(watchSession.isReachable ? Color.green : Color.red)
-                        .font(.system(size: 10))
+                // MARK: Header Card
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Gestures")
+                        .font(.system(.title2, design: .rounded))
+                        .bold()
+                        .foregroundColor(Color("Text"))
+                        .onTapGesture { watchSession.sendGesture(.tap)}
                     
-                    // Status text
-                    Text(watchSession.isReachable ? "Connected to iPhone" : "No Connection")
-                        .font(.footnote)
-                        .foregroundColor(watchSession.isReachable ? Color("Green") : .red)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                
-                Spacer().frame(height: 20)
-            }
-            
-            VStack {
-                Text("Swipe left to trigger gesture")
-                    .padding()
-                
-                if accel.detectedSwipeLeft {
                     
-                    Text("Swipe Left Detected!")
-                        .foregroundColor(.green)
-                } else {
-                    Text("Waiting for swipe...")
-                        .foregroundColor(.gray)
+                    
+                    HStack(spacing: 8) {
+                        Image(systemName: watchSession.isReachable ? "circle.fill" : "circle")
+                            .foregroundColor(watchSession.isReachable ? .green : .red)
+                            .font(.system(size: 12))
+                        
+                        Text(watchSession.isReachable ? "Connected to iPhone" : "No Connection")
+                            .font(.footnote)
+                            .foregroundColor(watchSession.isReachable ? Color("Green") : .red)
+                    }
                 }
-            }
-            .onAppear {
-                accel.start()
-            }
-            .onDisappear {
-                accel.stop()
-            }
-            .onChange(of: accel.detectedSwipeLeft) {
-                if accel.detectedSwipeLeft {
-                    watchSession.sendGesture(.leftSwipe)
-                    print("LEFT SWIPE SENT TO IPHONE")
+                .padding()
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(Color("CardBackground")) // Use a light gray/soft color
+                        .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
+                )
+                
+                // MARK: Swipe Detection Card
+                ZStack {
+                    // Breathing circle in the background
+                    if !accel.detectedSwipeLeft {
+                        BreathingCircle()
+                            .frame(width: 60, height: 60)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    }
+                    
+                    
                 }
+                .onAppear { accel.start() }
+                .onDisappear { accel.stop() }
+                .onChange(of: accel.detectedSwipeLeft) {
+                    if accel.detectedSwipeLeft {
+                        watchSession.sendGesture(.leftSwipe)
+                        print("LEFT SWIPE SENT TO IPHONE")
+                    }
+                }
+
+                
+                Spacer()
             }
-            
-            //            HStack {
-            //                GestureButton(title: "Click Me", action: {watchSession.sendGesture(.tap) })
-            //            }
+            .padding()
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding()
     }
 }
-
-
 
 #Preview {
     StartPage()
 }
-
