@@ -5,13 +5,13 @@ struct SettingsPage: View {
 
     var body: some View {
         Form {
-            Section("Gesture Detection") {
-                Toggle("Left Swipe", isOn: $accel.detectLeft)
-                Toggle("Right Swipe", isOn: $accel.detectRight)
-                Toggle("Up Swipe", isOn: $accel.detectUp)
-                Toggle("Down Swipe", isOn: $accel.detectDown)
+            Section(header: Text("Gesture Detection")) {
+                Toggle("Detect Left Swipe", isOn: $accel.detectLeft)
+                Toggle("Detect Right Swipe", isOn: $accel.detectRight)
+                Toggle("Detect Up Swipe", isOn: $accel.detectUp)
+                Toggle("Detect Down Swipe", isOn: $accel.detectDown)
             }
-
+            
             Section("Calibration") {
                 if accel.isCalibrating {
                     HStack {
@@ -19,7 +19,7 @@ struct SettingsPage: View {
                         VStack(spacing: 6) {
                             Text("Hold still...")
                                 .font(.headline)
-
+                            
                             Text("\(accel.calibrationCountdown)")
                                 .font(.system(size: 32, weight: .bold))
                                 .foregroundColor(.blue)
@@ -36,6 +36,7 @@ struct SettingsPage: View {
         .navigationTitle("Settings")
     }
 }
+
 
 #Preview {
     SettingsPage()

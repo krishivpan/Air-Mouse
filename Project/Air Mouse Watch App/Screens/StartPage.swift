@@ -83,7 +83,7 @@ struct StartPage: View {
                 .padding()
                 .background(
                     RoundedRectangle(cornerRadius: 16)
-                        .fill(Color("CardBackground"))
+                        .fill(Color("Background"))
                         .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
                 )
 
@@ -130,7 +130,7 @@ struct StartPage: View {
                 .padding()
                 .background(
                     RoundedRectangle(cornerRadius: 16)
-                        .fill(Color("CardBackground"))
+                        .fill(Color("Background"))
                         .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
                 )
                 .onChange(of: accel.detectedSwipeLeft) { _, newValue in
