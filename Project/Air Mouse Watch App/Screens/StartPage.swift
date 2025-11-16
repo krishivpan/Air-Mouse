@@ -9,6 +9,8 @@ import SwiftUI
 
 struct StartPage: View {
     @StateObject private var watchSession = WatchSessionManager.shared
+    @State private var isConnected = false;
+    @StateObject private var accel = AccelerometerManager()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -16,22 +18,48 @@ struct StartPage: View {
                 Text("Gestures")
                     .font(.title2)
                     .foregroundColor(Color("Text"))
-                if watchSession.isReachable {
-                    Text("Connected to iPhone")
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                
+                
+                
+                HStack(spacing: 6) {
+                    // Circle indicator
+                    Image(systemName: watchSession.isReachable ? "circle.fill" : "circle")
+                        .foregroundColor(watchSession.isReachable ? Color.green : Color.red)
+                        .font(.system(size: 10))
+                    
+                    // Status text
+                    Text(watchSession.isReachable ? "Connected to iPhone" : "No Connection")
                         .font(.footnote)
-                        .foregroundColor(Color("Green"))
-                } else {
-                    Text("Not Connected to iPhone")
-                        .font(.footnote)
-                        .foregroundColor(Color("Red"))
+                        .foregroundColor(watchSession.isReachable ? Color("Green") : .red)
                 }
-
-                Spacer().frame(height: 20) // Spacing before buttons
+                .frame(maxWidth: .infinity, alignment: .leading)
+                
+                Spacer().frame(height: 20)
             }
             
-            HStack {
-                GestureButton(title: "Click Me", action: {watchSession.sendGesture(.tap) })
+            VStack {
+                Text("Swipe left to trigger gesture")
+                    .padding()
+                
+                if accel.detectedSwipeLeft {
+                    Text("Swipe Left Detected!")
+                        .foregroundColor(.green)
+                } else {
+                    Text("Waiting for swipe...")
+                        .foregroundColor(.gray)
+                }
             }
+            .onAppear {
+                accel.start()
+            }
+            .onDisappear {
+                accel.stop()
+            }
+            
+//            HStack {
+//                GestureButton(title: "Click Me", action: {watchSession.sendGesture(.tap) })
+//            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
