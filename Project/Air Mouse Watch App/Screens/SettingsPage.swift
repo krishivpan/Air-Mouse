@@ -12,6 +12,7 @@ struct SettingsPage: View {
                 Toggle("Down Swipe", isOn: $accel.detectDown)
             }
             
+            
             Section("Calibration") {
                 if accel.isCalibrating {
                     HStack {

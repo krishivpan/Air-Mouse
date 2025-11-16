@@ -53,103 +53,169 @@ final class ExtendedRuntimeController: NSObject, ObservableObject, WKExtendedRun
     }
 }
 
+struct breathingCircle: View {
+    @State private var scale: CGFloat = 1.0
+    @State private var opacity: Double = 0.6
+    
+    var body: some View {
+        ZStack {
+            // Single elegant ring
+            Circle()
+                .stroke(
+                    LinearGradient(
+                        colors: [
+                            Color.cyan.opacity(0.8),
+                            Color.blue.opacity(0.9),
+                            Color.purple.opacity(0.7)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 2
+                )
+                .scaleEffect(scale)
+                .opacity(opacity)
+            
+            // Center dot
+            Circle()
+                .fill(Color.white.opacity(0.8))
+                .frame(width: 6, height: 6)
+        }
+        .frame(width: 70, height: 70)
+        .onAppear {
+            // Breathing animation
+            withAnimation(
+                Animation
+                    .easeInOut(duration: 2.5)
+                    .repeatForever(autoreverses: true)
+            ) {
+                scale = 1.15
+                opacity = 0.95
+            }
+        }
+    }
+}
+
 struct StartPage: View {
     @EnvironmentObject private var watchSession: WatchSessionManager
     @StateObject private var accel = AccelerometerManager()
     @StateObject private var runtimeController = ExtendedRuntimeController()
+    
+    @State private var currentGesture: AirMouseGesture?
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
+        ZStack {
+            // Dark, techy background
+            LinearGradient(
+                colors: [
+                    Color.black,
+                    Color(red: 0.07, green: 0.07, blue: 0.15)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
+            
+            VStack(spacing: 14) {
+                
+                Spacer()
 
                 // MARK: Header Card
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: 6) {
                     Text("Gestures")
-                        .font(.system(.title2, design: .rounded))
-                        .bold()
-                        .foregroundColor(Color("Text"))
+                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [Color.cyan, Color.blue, Color.purple],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
                         .onTapGesture { watchSession.sendGesture(.tap) }
 
-                    HStack(spacing: 8) {
-                        Image(systemName: watchSession.isReachable ? "circle.fill" : "circle")
+                    HStack(spacing: 6) {
+                        Circle()
+                            .fill(watchSession.isReachable ? Color.green : Color.red)
+                            .frame(width: 8, height: 8)
+
+                        Text(watchSession.isReachable ? "Connected" : "Disconnected")
+                            .font(.system(size: 10))
                             .foregroundColor(watchSession.isReachable ? .green : .red)
-                            .font(.system(size: 12))
-
-                        Text(watchSession.isReachable ? "Connected to iPhone" : "No Connection")
-                            .font(.footnote)
-                            .foregroundColor(watchSession.isReachable ? Color("Green") : .red)
                     }
                 }
-                .padding()
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(12)
                 .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(Color("Background"))
-                        .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    Color(red: 0.12, green: 0.12, blue: 0.18),
+                                    Color(red: 0.08, green: 0.08, blue: 0.14)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .shadow(color: Color.black.opacity(0.35), radius: 8, x: 0, y: 4)
                 )
 
-                // MARK: Gesture Detection Card with smooth animation
+                Spacer()
+
+                // MARK: Gesture Detection Card with seamless animation
                 ZStack {
-                    // Breathing circle
-                    BreathingCircle()
-                        .frame(width: 60, height: 60)
-                        .opacity(accel.detectedSwipeLeft || accel.detectedSwipeRight || accel.detectedSwipeUp || accel.detectedSwipeDown ? 0 : 1)
-                        .scaleEffect(accel.detectedSwipeLeft || accel.detectedSwipeRight || accel.detectedSwipeUp || accel.detectedSwipeDown ? 0.8 : 1)
-                        .animation(.easeInOut(duration: 0.3), value: accel.detectedSwipeLeft || accel.detectedSwipeRight || accel.detectedSwipeUp || accel.detectedSwipeDown)
-
-                    // Swipe arrows
-                    if accel.detectedSwipeLeft {
-                        Image(systemName: "arrow.left.circle.fill")
-                            .font(.system(size: 40))
-                            .foregroundColor(.green)
-                            .transition(.asymmetric(insertion: .scale.combined(with: .opacity),
-                                                    removal: .opacity))
-                    }
-                    if accel.detectedSwipeRight {
-                        Image(systemName: "arrow.right.circle.fill")
-                            .font(.system(size: 40))
-                            .foregroundColor(.blue)
-                            .transition(.asymmetric(insertion: .scale.combined(with: .opacity),
-                                                    removal: .opacity))
-                    }
-                    if accel.detectedSwipeUp {
-                        Image(systemName: "arrow.up.circle.fill")
-                            .font(.system(size: 40))
-                            .foregroundColor(.orange)
-                            .transition(.asymmetric(insertion: .scale.combined(with: .opacity),
-                                                    removal: .opacity))
-                    }
-                    if accel.detectedSwipeDown {
-                        Image(systemName: "arrow.down.circle.fill")
-                            .font(.system(size: 40))
-                            .foregroundColor(.red)
-                            .transition(.asymmetric(insertion: .scale.combined(with: .opacity),
-                                                    removal: .opacity))
+                    if currentGesture == nil {
+                        breathingCircle()
+                            .transition(.scale.combined(with: .opacity))
+                    } else {
+                        gestureIcon(for: currentGesture!)
+                            .transition(.scale(scale: 1.2).combined(with: .opacity))
                     }
                 }
-                .frame(maxWidth: .infinity, minHeight: 80)
+                .frame(maxWidth: .infinity, minHeight: 90)
                 .padding()
-                .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(Color("Background"))
-                        .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
-                )
                 .onChange(of: accel.detectedSwipeLeft) { _, newValue in
-                    if newValue { watchSession.sendGesture(.leftSwipe) }
+                    if newValue {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                            currentGesture = .leftSwipe
+                        }
+                        watchSession.sendGesture(.leftSwipe)
+                        resetGesture()
+                    }
                 }
                 .onChange(of: accel.detectedSwipeRight) { _, newValue in
-                    if newValue { watchSession.sendGesture(.rightSwipe) }
+                    if newValue {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                            currentGesture = .rightSwipe
+                        }
+                        watchSession.sendGesture(.rightSwipe)
+                        resetGesture()
+                    }
                 }
                 .onChange(of: accel.detectedSwipeUp) { _, newValue in
-                    if newValue { watchSession.sendGesture(.upSwipe) }
+                    if newValue {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                            currentGesture = .upSwipe
+                        }
+                        watchSession.sendGesture(.upSwipe)
+                        resetGesture()
+                    }
                 }
                 .onChange(of: accel.detectedSwipeDown) { _, newValue in
-                    if newValue { watchSession.sendGesture(.downSwipe) }
+                    if newValue {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                            currentGesture = .downSwipe
+                        }
+                        watchSession.sendGesture(.downSwipe)
+                        resetGesture()
+                    }
                 }
 
                 Spacer()
             }
-            .padding()
+            .padding(.horizontal, 12)
         }
+        .preferredColorScheme(.dark)
         .onAppear {
             accel.start()
             runtimeController.startSession()
@@ -159,6 +225,65 @@ struct StartPage: View {
             runtimeController.endSession()
         }
     }
+    
+    private func gestureIcon(for gesture: AirMouseGesture) -> some View {
+        let iconData = getIconData(for: gesture)
+        
+        return ZStack {
+            // Glow effect
+            Circle()
+                .fill(iconData.color.opacity(0.3))
+                .frame(width: 80, height: 80)
+                .blur(radius: 10)
+            
+            // Icon
+            Image(systemName: iconData.name)
+                .font(.system(size: 50))
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [iconData.color, iconData.color.opacity(0.7)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+        }
+    }
+    
+    private func getIconData(for gesture: AirMouseGesture) -> (name: String, color: Color) {
+        switch gesture {
+        case .leftSwipe:
+            return ("arrow.left.circle.fill", .green)
+        case .rightSwipe:
+            return ("arrow.right.circle.fill", .blue)
+        case .upSwipe:
+            return ("arrow.up.circle.fill", .orange)
+        case .downSwipe:
+            return ("arrow.down.circle.fill", .red)
+        default:
+            return ("circle.fill", .white)
+        }
+    }
+    
+    private func gestureColor(for gesture: AirMouseGesture) -> Color {
+        switch gesture {
+        case .leftSwipe: return .green
+        case .rightSwipe: return .blue
+        case .upSwipe: return .orange
+        case .downSwipe: return .red
+        default: return .white
+        }
+    }
+    
+    private func resetGesture() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+            withAnimation(.easeOut(duration: 0.3)) {
+                currentGesture = nil
+            }
+        }
+    }
 }
 
-#Preview { StartPage() .environmentObject(WatchSessionManager.shared) }
+#Preview {
+    StartPage()
+        .environmentObject(WatchSessionManager.shared)
+}

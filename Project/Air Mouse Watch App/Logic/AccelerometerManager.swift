@@ -24,56 +24,53 @@ class AccelerometerManager: ObservableObject {
     
     private var baselineX: Double = 0
     private var baselineY: Double = 0
-    private var baselineAngle: Double = 0  // wrist rotation angle
-    private var latestAcceleration: CMAcceleration?
     
-    // MARK: - Thresholds
-    private let threshold: Double = 0.7
+    // MARK: - Thresholds (increased for user acceleration)
+    private let threshold: Double = 1.5  // Higher threshold for actual movement
     private let debounceInterval: TimeInterval = 0.35
     private var lastSwipeTime = Date.distantPast
     
-    // MARK: - Start Accelerometer
+    // MARK: - Start Device Motion (filters out gravity)
     func start() {
-        guard motion.isAccelerometerAvailable else { return }
+        guard motion.isDeviceMotionAvailable else { return }
         
-        motion.accelerometerUpdateInterval = 0.02
-        motion.startAccelerometerUpdates(to: .main) { [weak self] data, _ in
-            guard let self = self, let raw = data?.acceleration else { return }
+        motion.deviceMotionUpdateInterval = 0.02
+        
+        // Use deviceMotion instead of accelerometer - this filters out gravity!
+        motion.startDeviceMotionUpdates(to: .main) { [weak self] data, _ in
+            guard let self = self, let motion = data else { return }
             
-            self.latestAcceleration = raw
+            // userAcceleration excludes gravity - only actual movement
+            let userAccel = motion.userAcceleration
             
-            // Apply rotation compensation using baselineAngle
-            let dx = raw.x - self.baselineX
-            let dy = raw.y - self.baselineY
-            
-            // Rotate by -baselineAngle to get neutral-aligned coordinates
-            let correctedX = dx * cos(-self.baselineAngle) - dy * sin(-self.baselineAngle)
-            let correctedY = dx * sin(-self.baselineAngle) + dy * cos(-self.baselineAngle)
+            // Apply baseline calibration
+            let dx = userAccel.x - self.baselineX
+            let dy = userAccel.y - self.baselineY
             
             let now = Date()
             guard now.timeIntervalSince(self.lastSwipeTime) > self.debounceInterval else { return }
             
-            // LEFT
-            if self.detectLeft && correctedX < -self.threshold {
+            // LEFT (negative X)
+            if self.detectLeft && dx < -self.threshold {
                 self.trigger(.left)
             }
-            // RIGHT
-            if self.detectRight && correctedX > self.threshold {
+            // RIGHT (positive X)
+            if self.detectRight && dx > self.threshold {
                 self.trigger(.right)
             }
-            // UP
-            if self.detectUp && correctedY > self.threshold {
+            // UP (positive Y)
+            if self.detectUp && dy > self.threshold {
                 self.trigger(.up)
             }
-            // DOWN
-            if self.detectDown && correctedY < -self.threshold {
+            // DOWN (negative Y)
+            if self.detectDown && dy < -self.threshold {
                 self.trigger(.down)
             }
         }
     }
     
     func stop() {
-        motion.stopAccelerometerUpdates()
+        motion.stopDeviceMotionUpdates()
     }
     
     // MARK: - Swipe Trigger
@@ -102,6 +99,7 @@ class AccelerometerManager: ObservableObject {
     func recalibrate() {
         isCalibrating = true
         calibrationCountdown = 3
+        calibrationDone = false
         
         Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { timer in
             self.calibrationCountdown -= 1
@@ -114,22 +112,37 @@ class AccelerometerManager: ObservableObject {
     }
     
     private func finishCalibration() {
-        guard let accel = self.latestAcceleration else {
+        // Temporarily store the current motion data
+        var capturedUserAccel: CMAcceleration?
+        
+        // Start a quick update just to get the current state
+        if motion.isDeviceMotionAvailable {
+            motion.startDeviceMotionUpdates(to: .main) { [weak self] data, _ in
+                guard let self = self, let motion = data else { return }
+                capturedUserAccel = motion.userAcceleration
+            }
+            
+            // Wait a moment to capture the data
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+                guard let self = self, let userAccel = capturedUserAccel else {
+                    self?.isCalibrating = false
+                    return
+                }
+                
+                // Set baseline to current userAcceleration (should be ~0 when still)
+                self.baselineX = userAccel.x
+                self.baselineY = userAccel.y
+                
+                self.isCalibrating = false
+                self.calibrationDone = true
+                
+                // Auto-hide checkmark after 1.5 seconds
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                    self.calibrationDone = false
+                }
+            }
+        } else {
             isCalibrating = false
-            return
-        }
-        
-        // Compute wrist rotation angle relative to neutral position
-        baselineAngle = atan2(accel.y, accel.x)
-        baselineX = accel.x
-        baselineY = accel.y
-        
-        isCalibrating = false
-        calibrationDone = true
-        
-        // Auto-hide checkmark after 1.5 seconds
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-            self.calibrationDone = false
         }
     }
 }
