@@ -119,12 +119,12 @@ struct StartPage: View {
             VStack(spacing: 8) {
                 
                 Spacer()
-                    .frame(height: 45)
+                    .frame(height: 20)
 
                 // MARK: Header Card
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Gestures")
-                        .font(.system(size: 22, weight: .bold, design: .rounded))
+                        .font(.system(size: 29, weight: .bold, design: .rounded))
                         .foregroundStyle(
                             LinearGradient(
                                 colors: [Color.blue, Color.blue.opacity(0.7)],
@@ -140,26 +140,12 @@ struct StartPage: View {
                             .frame(width: 8, height: 8)
 
                         Text(watchSession.isReachable ? "Connected to iPhone" : "Not Connected")
-                            .font(.system(size: 10))
+                            .font(.system(size: 16))
                             .foregroundColor(watchSession.isReachable ? .green : .red)
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(12)
-                .background(
-                    RoundedRectangle(cornerRadius: 14)
-                        .fill(
-                            LinearGradient(
-                                colors: [
-                                    Color(red: 0.12, green: 0.12, blue: 0.18),
-                                    Color(red: 0.08, green: 0.08, blue: 0.14)
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .shadow(color: Color.black.opacity(0.35), radius: 8, x: 0, y: 4)
-                )
 
 
 
@@ -172,12 +158,19 @@ struct StartPage: View {
                     } else if currentGesture == nil {
                         breathingCircle()
                             .transition(.scale.combined(with: .opacity))
-                            .onTapGesture {
-                                handleTap()
-                            }
-                            .onLongPressGesture(minimumDuration: 0.5) {
-                                triggerCalibration()
-                            }
+                            .contentShape(Circle())
+                            .simultaneousGesture(
+                                TapGesture()
+                                    .onEnded { _ in
+                                        handleTap()
+                                    }
+                            )
+                            .simultaneousGesture(
+                                LongPressGesture(minimumDuration: 0.5)
+                                    .onEnded { _ in
+                                        triggerCalibration()
+                                    }
+                            )
                     } else {
                         gestureIcon(for: currentGesture!)
                             .transition(.scale(scale: 1.2).combined(with: .opacity))
