@@ -1,10 +1,3 @@
-//
-//  AccelerometerManager.swift
-//  Air Mouse
-//
-//  Created by Krishiv Panchal on 2025-11-15.
-//
-
 import CoreMotion
 import Foundation
 import Combine
@@ -18,15 +11,15 @@ class AccelerometerManager: ObservableObject {
     @Published var detectedSwipeUp = false
     @Published var detectedSwipeDown = false
     
-    // MARK: - Thresholds (tweak based on wrist motion)
+    // MARK: - Thresholds (adjust as needed)
     private let leftSwipeThreshold: Double = -0.8
     private let rightSwipeThreshold: Double = 0.8
     private let upSwipeThreshold: Double = 0.8
     private let downSwipeThreshold: Double = -0.8
     
-    // MARK: - Debounce to prevent multiple triggers
+    // MARK: - Cooldown
     private var lastSwipeTime: Date = Date.distantPast
-    private let debounceInterval: TimeInterval = 0.3
+    private let cooldown: TimeInterval = 5.0 // Wait 5.0s after each gesture
     
     // MARK: - Start accelerometer
     func start() {
@@ -37,8 +30,9 @@ class AccelerometerManager: ObservableObject {
         motion.startAccelerometerUpdates(to: .main) { [weak self] data, _ in
             guard let self = self, let accel = data?.acceleration else { return }
             
+            // Check cooldown
             let now = Date()
-            guard now.timeIntervalSince(self.lastSwipeTime) > self.debounceInterval else { return }
+            guard now.timeIntervalSince(self.lastSwipeTime) > self.cooldown else { return }
             
             // Detect swipes
             if accel.x < self.leftSwipeThreshold {
@@ -53,12 +47,10 @@ class AccelerometerManager: ObservableObject {
         }
     }
     
-    // MARK: - Stop accelerometer
     func stop() {
         motion.stopAccelerometerUpdates()
     }
     
-    // MARK: - Swipe detection
     private enum SwipeDirection {
         case left, right, up, down
     }

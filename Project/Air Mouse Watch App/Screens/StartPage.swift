@@ -9,8 +9,6 @@ import SwiftUI
 import WatchKit
 import Combine
 
-// MARK: - Extended Runtime Controller (same file, only for Watch target)
-
 final class ExtendedRuntimeController: NSObject, ObservableObject, WKExtendedRuntimeSessionDelegate {
 
     @Published var isRunning: Bool = false
@@ -18,32 +16,20 @@ final class ExtendedRuntimeController: NSObject, ObservableObject, WKExtendedRun
 
     private var session: WKExtendedRuntimeSession?
 
-    // Start or restart an extended runtime session
     func startSession() {
-        // If there's no session yet, create one
         if session == nil {
             let newSession = WKExtendedRuntimeSession()
             newSession.delegate = self
             session = newSession
         }
-
         guard let session = session else { return }
-
-        // If it's already running, do nothing
-        if session.state == .running {
-            return
-        }
-
-        // Start (system will accept or reject based on power policy)
+        if session.state == .running { return }
         session.start()
     }
 
-    // End the current session (e.g. when leaving this screen)
     func endSession() {
         session?.invalidate()
     }
-
-    // MARK: - WKExtendedRuntimeSessionDelegate
 
     func extendedRuntimeSessionDidStart(_ session: WKExtendedRuntimeSession) {
         DispatchQueue.main.async {
@@ -52,10 +38,7 @@ final class ExtendedRuntimeController: NSObject, ObservableObject, WKExtendedRun
         }
     }
 
-    func extendedRuntimeSessionWillExpire(_ session: WKExtendedRuntimeSession) {
-        // Called shortly before the system ends the session.
-        // You could clean up or notify the UI if you want.
-    }
+    func extendedRuntimeSessionWillExpire(_ session: WKExtendedRuntimeSession) {}
 
     func extendedRuntimeSession(
         _ session: WKExtendedRuntimeSession,
@@ -65,17 +48,10 @@ final class ExtendedRuntimeController: NSObject, ObservableObject, WKExtendedRun
         DispatchQueue.main.async {
             self.isRunning = false
             self.lastError = error
-
-            // Once invalidated, discard this session so a new one
-            // can be created the next time startSession() is called.
-            if self.session === session {
-                self.session = nil
-            }
+            if self.session === session { self.session = nil }
         }
     }
 }
-
-// MARK: - StartPage View
 
 struct StartPage: View {
     @EnvironmentObject private var watchSession: WatchSessionManager
@@ -86,15 +62,13 @@ struct StartPage: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
 
-                // MARK: - Header Card
+                // MARK: Header Card
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Gestures")
                         .font(.system(.title2, design: .rounded))
                         .bold()
                         .foregroundColor(Color("Text"))
-                        .onTapGesture {
-                            watchSession.sendGesture(.tap)
-                        }
+                        .onTapGesture { watchSession.sendGesture(.tap) }
 
                     HStack(spacing: 8) {
                         Image(systemName: watchSession.isReachable ? "circle.fill" : "circle")
@@ -103,9 +77,7 @@ struct StartPage: View {
 
                         Text(watchSession.isReachable ? "Connected to iPhone" : "No Connection")
                             .font(.footnote)
-                            .foregroundColor(
-                                watchSession.isReachable ? Color("Green") : .red
-                            )
+                            .foregroundColor(watchSession.isReachable ? Color("Green") : .red)
                     }
                 }
                 .padding()
@@ -115,50 +87,43 @@ struct StartPage: View {
                         .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
                 )
 
-                // MARK: - Swipe Detection Card
+                // MARK: Gesture Detection Card with smooth animation
                 ZStack {
-                    // Breathing circle when no swipe detected
-                    if !accel.detectedSwipeLeft &&
-                        !accel.detectedSwipeRight &&
-                        !accel.detectedSwipeUp &&
-                        !accel.detectedSwipeDown {
+                    // Breathing circle
+                    BreathingCircle()
+                        .frame(width: 60, height: 60)
+                        .opacity(accel.detectedSwipeLeft || accel.detectedSwipeRight || accel.detectedSwipeUp || accel.detectedSwipeDown ? 0 : 1)
+                        .scaleEffect(accel.detectedSwipeLeft || accel.detectedSwipeRight || accel.detectedSwipeUp || accel.detectedSwipeDown ? 0.8 : 1)
+                        .animation(.easeInOut(duration: 0.3), value: accel.detectedSwipeLeft || accel.detectedSwipeRight || accel.detectedSwipeUp || accel.detectedSwipeDown)
 
-                        BreathingCircle()
-                            .frame(width: 60, height: 60)
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    }
-
-                    // Swipe animations
+                    // Swipe arrows
                     if accel.detectedSwipeLeft {
                         Image(systemName: "arrow.left.circle.fill")
                             .font(.system(size: 40))
                             .foregroundColor(.green)
-                            .transition(.move(edge: .leading))
-                            .animation(.easeOut(duration: 0.4), value: accel.detectedSwipeLeft)
+                            .transition(.asymmetric(insertion: .scale.combined(with: .opacity),
+                                                    removal: .opacity))
                     }
-
                     if accel.detectedSwipeRight {
                         Image(systemName: "arrow.right.circle.fill")
                             .font(.system(size: 40))
                             .foregroundColor(.blue)
-                            .transition(.move(edge: .trailing))
-                            .animation(.easeOut(duration: 0.4), value: accel.detectedSwipeRight)
+                            .transition(.asymmetric(insertion: .scale.combined(with: .opacity),
+                                                    removal: .opacity))
                     }
-
                     if accel.detectedSwipeUp {
                         Image(systemName: "arrow.up.circle.fill")
                             .font(.system(size: 40))
                             .foregroundColor(.orange)
-                            .transition(.move(edge: .top))
-                            .animation(.easeOut(duration: 0.4), value: accel.detectedSwipeUp)
+                            .transition(.asymmetric(insertion: .scale.combined(with: .opacity),
+                                                    removal: .opacity))
                     }
-
                     if accel.detectedSwipeDown {
                         Image(systemName: "arrow.down.circle.fill")
                             .font(.system(size: 40))
                             .foregroundColor(.red)
-                            .transition(.move(edge: .bottom))
-                            .animation(.easeOut(duration: 0.4), value: accel.detectedSwipeDown)
+                            .transition(.asymmetric(insertion: .scale.combined(with: .opacity),
+                                                    removal: .opacity))
                     }
                 }
                 .frame(maxWidth: .infinity, minHeight: 80)
@@ -168,7 +133,6 @@ struct StartPage: View {
                         .fill(Color("CardBackground"))
                         .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
                 )
-                // MARK: - Swipe Handling using modern onChange
                 .onChange(of: accel.detectedSwipeLeft) { _, newValue in
                     if newValue { watchSession.sendGesture(.leftSwipe) }
                 }
@@ -186,7 +150,6 @@ struct StartPage: View {
             }
             .padding()
         }
-        // Start/stop sensors + extended runtime when this page is visible
         .onAppear {
             accel.start()
             runtimeController.startSession()
@@ -198,7 +161,4 @@ struct StartPage: View {
     }
 }
 
-#Preview {
-    StartPage()
-        .environmentObject(WatchSessionManager.shared)
-}
+#Preview { StartPage() .environmentObject(WatchSessionManager.shared) }
