@@ -9,7 +9,7 @@ import SwiftUI
 import UIKit   // for opening Settings app
 
 struct ContentView: View {
-    @EnvironmentObject private var phoneSession: PhoneSessionManager.shared
+    @EnvironmentObject private var phoneSession: PhoneSessionManager
     @State private var showSettingsAlert: Bool = false
 
     var body: some View {
@@ -36,9 +36,6 @@ struct ContentView: View {
 
                     // MARK: - Gesture Feed Card
                     gestureFeedCard
-
-                    // MARK: - Debug Info
-                    debugInfoSection
 
                     Spacer(minLength: 16)
                 }
@@ -225,38 +222,6 @@ private extension ContentView {
         .padding(.top, 4)
     }
 
-    // Extra debug section
-    var debugInfoSection: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("Debug Info (iOS)")
-                .font(.caption)
-                .foregroundColor(.gray)
-
-            Text("Watch reachable: \(phoneSession.isReachable.description)")
-                .font(.caption2)
-                .foregroundColor(.gray)
-
-            Text("Mac connected: \(phoneSession.isMacConnected.description)")
-                .font(.caption2)
-                .foregroundColor(.gray)
-
-            if let gesture = phoneSession.lastGesture {
-                Text("Last gesture: \(gesture.rawValue)")
-                    .font(.caption2)
-                    .foregroundColor(.gray)
-            } else {
-                Text("Last gesture: nil")
-                    .font(.caption2)
-                    .foregroundColor(.gray)
-            }
-        }
-        .padding(10)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.black.opacity(0.3))
-        )
-    }
-
     func prettyGestureName(_ gesture: AirMouseGesture?) -> String {
         guard let gesture = gesture else { return "Listening for Gestures" }
 
@@ -280,7 +245,7 @@ private extension ContentView {
 
         if UIApplication.shared.canOpenURL(settingsUrl) {
             UIApplication.shared.open(settingsUrl, options: [:]) { success in
-                print("📱[ContentView] Settings opened: \(success)")
+                print("Settings opened: \(success)")
             }
         }
     }

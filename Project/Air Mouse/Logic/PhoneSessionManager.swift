@@ -31,12 +31,9 @@ final class PhoneSessionManager: NSObject, ObservableObject, WCSessionDelegate {
     private let mcSession: MCSession
     private let advertiser: MCNearbyServiceAdvertiser
 
-    private let debugLogPrefix = "[Phone→Mac][MC]"
-
     private override init() {
         // Multipeer setup
-        let deviceName = UIDevice.current.name
-        self.myPeerID = MCPeerID(displayName: deviceName)
+        self.myPeerID = MCPeerID(displayName: UIDevice.current.name)
 
         self.mcSession = MCSession(
             peer: myPeerID,
@@ -52,14 +49,11 @@ final class PhoneSessionManager: NSObject, ObservableObject, WCSessionDelegate {
 
         super.init()
 
-        log("INIT with peerID = \(deviceName), serviceType = \(serviceType)")
-
         // Multipeer delegates
         mcSession.delegate = self
         advertiser.delegate = self
-
         advertiser.startAdvertisingPeer()
-        log("Started advertising for Mac peers.")
+        print("[Phone→Mac] Started advertising for Mac peers.")
 
         // WatchConnectivity
         activateSession()
@@ -68,39 +62,26 @@ final class PhoneSessionManager: NSObject, ObservableObject, WCSessionDelegate {
     deinit {
         advertiser.stopAdvertisingPeer()
         mcSession.disconnect()
-        log("Deinit: stopped advertising and disconnected session.")
-    }
-
-    private func log(_ message: String) {
-        print("\(debugLogPrefix) \(message)")
-    }
-
-    private func logPeers(_ whereFrom: String) {
-        let names = mcSession.connectedPeers.map { $0.displayName }
-        print("\(debugLogPrefix) \(whereFrom) – connectedPeers = \(names)")
     }
 
     // MARK: - WCSession Setup
 
     private func activateSession() {
         guard WCSession.isSupported() else {
-            print("[Phone→Watch] WCSession is not supported on this device")
+            print("WCSession is not supported on this device")
             return
         }
 
         let session = WCSession.default
         session.delegate = self
         session.activate()
-        print("[Phone→Watch] Activating WCSession...")
     }
 
     // MARK: - Send Gesture to Mac
 
     private func sendGestureToMac(_ gesture: AirMouseGesture) {
-        logPeers("sendGestureToMac BEFORE send")
-
         guard !mcSession.connectedPeers.isEmpty else {
-            log("No connected Mac peers, CANNOT send gesture \(gesture.rawValue).")
+            print("[Phone→Mac] No connected Mac peers, cannot send gesture.")
             return
         }
 
@@ -109,15 +90,15 @@ final class PhoneSessionManager: NSObject, ObservableObject, WCSessionDelegate {
         ]
 
         guard let data = try? JSONSerialization.data(withJSONObject: payload, options: []) else {
-            log("Failed to encode gesture payload \(gesture.rawValue).")
+            print("[Phone→Mac] Failed to encode gesture payload.")
             return
         }
 
         do {
             try mcSession.send(data, toPeers: mcSession.connectedPeers, with: .reliable)
-            log("✅ Sent gesture: \(gesture.rawValue)")
+            print("[Phone→Mac] Sent gesture: \(gesture.rawValue)")
         } catch {
-            log("❌ Failed to send gesture \(gesture.rawValue): \(error.localizedDescription)")
+            print("[Phone→Mac] Failed to send gesture: \(error.localizedDescription)")
         }
     }
 
@@ -129,9 +110,9 @@ final class PhoneSessionManager: NSObject, ObservableObject, WCSessionDelegate {
         error: Error?
     ) {
         if let error = error {
-            print("[Phone→Watch] activation failed: \(error.localizedDescription)")
+            print("Phone session activation failed: \(error.localizedDescription)")
         } else {
-            print("[Phone→Watch] activation state: \(activationState.rawValue)")
+            print("Phone session activated with state: \(activationState.rawValue)")
         }
 
         DispatchQueue.main.async {
@@ -148,29 +129,25 @@ final class PhoneSessionManager: NSObject, ObservableObject, WCSessionDelegate {
     func sessionReachabilityDidChange(_ session: WCSession) {
         DispatchQueue.main.async {
             self.isReachable = session.isReachable
-            print("[Phone→Watch] Reachability changed. isReachable = \(session.isReachable)")
+            print("Reachability changed. isReachable = \(session.isReachable)")
         }
     }
 
     func sessionWatchStateDidChange(_ session: WCSession) {
-        print("[Phone→Watch] Watch state changed: paired=\(session.isPaired), installed=\(session.isWatchAppInstalled)")
+        print("Watch state changed: paired=\(session.isPaired), installed=\(session.isWatchAppInstalled)")
     }
 
     // WATCH → PHONE gesture message
     func session(_ session: WCSession, didReceiveMessage message: [String : Any]) {
-        print("[Phone→Watch] Received message from Watch: \(message)")
+        print("Received message from Watch: \(message)")
 
         guard
             let gestureString = message[AirMouseKey.gesture] as? String,
             let gesture = AirMouseGesture(rawValue: gestureString)
-        else {
-            print("[Phone→Watch] Could not parse gesture from message.")
-            return
-        }
+        else { return }
 
         DispatchQueue.main.async {
             self.lastGesture = gesture
-            print("[Phone→Watch] Set lastGesture = \(gesture.rawValue)")
 
             // 🔁 FORWARD TO MAC
             self.sendGestureToMac(gesture)
@@ -189,17 +166,15 @@ extension PhoneSessionManager: MCSessionDelegate {
             switch state {
             case .connected:
                 self.isMacConnected = true
-                self.log("🟢 didChange state = CONNECTED to \(peerID.displayName)")
+                print("[Phone→Mac] Connected to Mac: \(peerID.displayName)")
             case .connecting:
-                self.log("🟡 didChange state = CONNECTING to \(peerID.displayName)")
+                print("[Phone→Mac] Connecting to Mac: \(peerID.displayName)...")
             case .notConnected:
                 self.isMacConnected = false
-                self.log("🔴 didChange state = NOT CONNECTED to \(peerID.displayName)")
+                print("[Phone→Mac] Disconnected from Mac: \(peerID.displayName)")
             @unknown default:
-                self.log("⚠️ didChange state = UNKNOWN for \(peerID.displayName)")
+                break
             }
-
-            self.logPeers("didChange state")
         }
     }
 
@@ -207,30 +182,24 @@ extension PhoneSessionManager: MCSessionDelegate {
                  didReceive data: Data,
                  fromPeer peerID: MCPeerID) {
         // Not used (Mac does not send gestures back)
-        log("Received DATA from Mac \(peerID.displayName) (unused). Size = \(data.count) bytes")
+        print("[Phone→Mac] Received data from Mac (unused).")
     }
 
     func session(_ session: MCSession,
                  didReceive stream: InputStream,
                  withName streamName: String,
-                 fromPeer peerID: MCPeerID) {
-        log("Received STREAM \(streamName) from \(peerID.displayName) (unused)")
-    }
+                 fromPeer peerID: MCPeerID) {}
 
     func session(_ session: MCSession,
                  didStartReceivingResourceWithName resourceName: String,
                  fromPeer peerID: MCPeerID,
-                 with progress: Progress) {
-        log("Started receiving RESOURCE \(resourceName) from \(peerID.displayName) (unused)")
-    }
+                 with progress: Progress) {}
 
     func session(_ session: MCSession,
                  didFinishReceivingResourceWithName resourceName: String,
                  fromPeer peerID: MCPeerID,
                  at localURL: URL?,
-                 withError error: Error?) {
-        log("Finished receiving RESOURCE \(resourceName) from \(peerID.displayName) (unused). Error=\(String(describing: error))")
-    }
+                 withError error: Error?) {}
 }
 
 // MARK: - MCNearbyServiceAdvertiserDelegate
@@ -241,13 +210,12 @@ extension PhoneSessionManager: MCNearbyServiceAdvertiserDelegate {
                     withContext context: Data?,
                     invitationHandler: @escaping (Bool, MCSession?) -> Void) {
 
-        log("INVITE: Received invitation from Mac: \(peerID.displayName). Accepting.")
-        logPeers("before accepting invite")
+        print("[Phone→Mac] Received invitation from Mac: \(peerID.displayName), accepting.")
         invitationHandler(true, mcSession)
     }
 
     func advertiser(_ advertiser: MCNearbyServiceAdvertiser,
                     didNotStartAdvertisingPeer error: Error) {
-        log("❌ Failed to start advertising: \(error.localizedDescription)")
+        print("[Phone→Mac] Failed to start advertising: \(error.localizedDescription)")
     }
 }

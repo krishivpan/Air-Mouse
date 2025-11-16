@@ -24,8 +24,6 @@ final class MacSessionManager: NSObject, ObservableObject {
     private let session: MCSession
     private let browser: MCNearbyServiceBrowser
 
-    private let debugLogPrefix = "[Mac⇄Phone][MC]"
-
     private override init() {
         // Display name of this Mac in the session
         let hostName = Host.current().localizedName ?? "Mac"
@@ -44,28 +42,15 @@ final class MacSessionManager: NSObject, ObservableObject {
 
         super.init()
 
-        log("INIT with peerID = \(hostName), serviceType = \(serviceType)")
-
         session.delegate = self
         browser.delegate = self
-
         browser.startBrowsingForPeers()
-        log("Started browsing for iPhone peers.")
+        print("[MacConnection] Started browsing for iPhone peers.")
     }
 
     deinit {
         browser.stopBrowsingForPeers()
         session.disconnect()
-        log("Deinit: stopped browsing and disconnected session.")
-    }
-
-    private func log(_ message: String) {
-        print("\(debugLogPrefix) \(message)")
-    }
-
-    private func logPeers(_ whereFrom: String) {
-        let names = session.connectedPeers.map { $0.displayName }
-        print("\(debugLogPrefix) \(whereFrom) – connectedPeers = \(names)")
     }
 }
 
@@ -76,20 +61,19 @@ extension MacSessionManager: MCNearbyServiceBrowserDelegate {
     func browser(_ browser: MCNearbyServiceBrowser,
                  foundPeer peerID: MCPeerID,
                  withDiscoveryInfo info: [String : String]?) {
-        log("FOUND peer: \(peerID.displayName), inviting...")
-        logPeers("before invite")
+        print("[MacConnection] Found peer: \(peerID.displayName), inviting...")
         browser.invitePeer(peerID, to: session, withContext: nil, timeout: 10)
     }
 
     func browser(_ browser: MCNearbyServiceBrowser,
                  lostPeer peerID: MCPeerID) {
-        log("LOST peer: \(peerID.displayName)")
-        logPeers("after lostPeer")
+        print("[MacConnection] Lost peer: \(peerID.displayName)")
     }
 
+    // Optional (not needed but exists in protocol)
     func browser(_ browser: MCNearbyServiceBrowser,
                  didNotStartBrowsingForPeers error: Error) {
-        log("❌ Failed to start browsing: \(error.localizedDescription)")
+        print("[MacConnection] Failed to start browsing: \(error.localizedDescription)")
     }
 }
 
@@ -105,19 +89,17 @@ extension MacSessionManager: MCSessionDelegate {
             case .connected:
                 self.isConnected = true
                 self.connectedPeerName = peerID.displayName
-                self.log("🟢 didChange state = CONNECTED to \(peerID.displayName)")
+                print("[MacConnection] Connected to \(peerID.displayName)")
             case .connecting:
-                self.log("🟡 didChange state = CONNECTING to \(peerID.displayName)")
+                print("[MacConnection] Connecting to \(peerID.displayName)...")
             case .notConnected:
-                self.log("🔴 didChange state = NOT CONNECTED to \(peerID.displayName)")
+                print("[MacConnection] Disconnected from \(peerID.displayName)")
                 self.isConnected = false
                 self.connectedPeerName = nil
                 self.lastGesture = nil
             @unknown default:
-                self.log("⚠️ didChange state = UNKNOWN for \(peerID.displayName)")
+                break
             }
-
-            self.logPeers("didChange state")
         }
     }
 
@@ -130,28 +112,30 @@ extension MacSessionManager: MCSessionDelegate {
             let gestureString = json[AirMouseKey.gesture] as? String,
             let gesture = AirMouseGesture(rawValue: gestureString)
         else {
-            log("Received DATA from \(peerID.displayName) but could not parse gesture. Size = \(data.count) bytes")
+            print("[MacConnection] Received data but could not parse gesture.")
             return
         }
 
         DispatchQueue.main.async {
             self.lastGesture = gesture
-            self.log("✅ Received gesture from \(peerID.displayName): \(gesture.rawValue)")
+            print("[MacConnection] Received gesture: \(gesture.rawValue)")
         }
     }
+
+    // We don't use streams or resources, but must implement the protocol:
 
     func session(_ session: MCSession,
                  didReceive stream: InputStream,
                  withName streamName: String,
                  fromPeer peerID: MCPeerID) {
-        log("Received STREAM \(streamName) from \(peerID.displayName) (unused)")
+        // Not used
     }
 
     func session(_ session: MCSession,
                  didStartReceivingResourceWithName resourceName: String,
                  fromPeer peerID: MCPeerID,
                  with progress: Progress) {
-        log("Started receiving RESOURCE \(resourceName) from \(peerID.displayName) (unused)")
+        // Not used
     }
 
     func session(_ session: MCSession,
@@ -159,6 +143,6 @@ extension MacSessionManager: MCSessionDelegate {
                  fromPeer peerID: MCPeerID,
                  at localURL: URL?,
                  withError error: Error?) {
-        log("Finished receiving RESOURCE \(resourceName) from \(peerID.displayName) (unused). Error=\(String(describing: error))")
+        // Not used
     }
 }

@@ -47,9 +47,6 @@ struct ContentView: View {
                 // Gesture feed
                 gestureFeedSection
 
-                // Debug info
-                debugInfoSection
-
                 Spacer()
             }
             .padding(24)
@@ -147,43 +144,6 @@ struct ContentView: View {
                 .frame(height: 80)
         }
         .padding(.top, 4)
-    }
-
-    private var debugInfoSection: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("Debug Info (Mac)")
-                .font(.caption)
-                .foregroundColor(.gray)
-
-            Text("isConnected: \(macConnection.isConnected.description)")
-                .font(.caption2)
-                .foregroundColor(.gray)
-
-            if let name = macConnection.connectedPeerName {
-                Text("connectedPeerName: \(name)")
-                    .font(.caption2)
-                    .foregroundColor(.gray)
-            } else {
-                Text("connectedPeerName: nil")
-                    .font(.caption2)
-                    .foregroundColor(.gray)
-            }
-
-            if let gesture = macConnection.lastGesture {
-                Text("lastGesture: \(gesture.rawValue)")
-                    .font(.caption2)
-                    .foregroundColor(.gray)
-            } else {
-                Text("lastGesture: nil")
-                    .font(.caption2)
-                    .foregroundColor(.gray)
-            }
-        }
-        .padding(10)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.black.opacity(0.3))
-        )
     }
 
     private func prettyGestureName(_ gesture: AirMouseGesture?) -> String {
