@@ -102,6 +102,8 @@ struct StartPage: View {
     @StateObject private var runtimeController = ExtendedRuntimeController()
     
     @State private var currentGesture: AirMouseGesture?
+    @State private var crownRotation: Double = 0.0
+    @State private var showCalibrationHint = false
 
     var body: some View {
         ZStack {
@@ -132,6 +134,10 @@ struct StartPage: View {
                             )
                         )
                         .onTapGesture { watchSession.sendGesture(.tap) }
+                        .onLongPressGesture(minimumDuration: 0.5) {
+                            // Force touch / long press to calibrate
+                            triggerCalibration()
+                        }
 
                     HStack(spacing: 6) {
                         Circle()
@@ -141,6 +147,14 @@ struct StartPage: View {
                         Text(watchSession.isReachable ? "Connected" : "Disconnected")
                             .font(.system(size: 10))
                             .foregroundColor(watchSession.isReachable ? .green : .red)
+                    }
+                    
+                    // Calibration hint (shows briefly on appear)
+                    if showCalibrationHint {
+                        Text("Long press to calibrate")
+                            .font(.system(size: 9))
+                            .foregroundColor(.gray)
+                            .transition(.opacity)
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -164,7 +178,11 @@ struct StartPage: View {
 
                 // MARK: Gesture Detection Card with seamless animation
                 ZStack {
-                    if currentGesture == nil {
+                    if accel.isCalibrating {
+                        calibratingView
+                    } else if accel.calibrationDone {
+                        calibrationDoneView
+                    } else if currentGesture == nil {
                         breathingCircle()
                             .transition(.scale.combined(with: .opacity))
                     } else {
@@ -174,8 +192,20 @@ struct StartPage: View {
                 }
                 .frame(maxWidth: .infinity, minHeight: 90)
                 .padding()
+                .focusable()
+                .digitalCrownRotation($crownRotation, from: -10, through: 10, by: 1, sensitivity: .low, isContinuous: false, isHapticFeedbackEnabled: true)
+                .onChange(of: crownRotation) { oldValue, newValue in
+                    // Trigger calibration when crown is rotated significantly
+                    if abs(newValue - oldValue) > 5 {
+                        triggerCalibration()
+                        crownRotation = 0.0 // Reset
+                    }
+                }
                 .onChange(of: accel.detectedSwipeLeft) { _, newValue in
                     if newValue {
+                        // Play haptic feedback
+                        WKInterfaceDevice.current().play(.click)
+                        
                         withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                             currentGesture = .leftSwipe
                         }
@@ -185,6 +215,9 @@ struct StartPage: View {
                 }
                 .onChange(of: accel.detectedSwipeRight) { _, newValue in
                     if newValue {
+                        // Play haptic feedback
+                        WKInterfaceDevice.current().play(.click)
+                        
                         withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                             currentGesture = .rightSwipe
                         }
@@ -194,6 +227,9 @@ struct StartPage: View {
                 }
                 .onChange(of: accel.detectedSwipeUp) { _, newValue in
                     if newValue {
+                        // Play haptic feedback
+                        WKInterfaceDevice.current().play(.click)
+                        
                         withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                             currentGesture = .upSwipe
                         }
@@ -203,6 +239,9 @@ struct StartPage: View {
                 }
                 .onChange(of: accel.detectedSwipeDown) { _, newValue in
                     if newValue {
+                        // Play haptic feedback
+                        WKInterfaceDevice.current().play(.click)
+                        
                         withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                             currentGesture = .downSwipe
                         }
@@ -219,6 +258,16 @@ struct StartPage: View {
         .onAppear {
             accel.start()
             runtimeController.startSession()
+            
+            // Show calibration hint for 3 seconds on first appear
+            withAnimation {
+                showCalibrationHint = true
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                withAnimation {
+                    showCalibrationHint = false
+                }
+            }
         }
         .onDisappear {
             accel.stop()
@@ -280,6 +329,41 @@ struct StartPage: View {
                 currentGesture = nil
             }
         }
+    }
+    
+    // MARK: - Calibration Views
+    private var calibratingView: some View {
+        VStack(spacing: 8) {
+            Text("Hold still...")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(.white)
+            
+            Text("\(accel.calibrationCountdown)")
+                .font(.system(size: 32, weight: .bold))
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [Color.cyan, Color.blue],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+        }
+        .transition(.scale.combined(with: .opacity))
+    }
+    
+    private var calibrationDoneView: some View {
+        Image(systemName: "checkmark.circle.fill")
+            .font(.system(size: 50))
+            .foregroundColor(.green)
+            .transition(.scale.combined(with: .opacity))
+    }
+    
+    private func triggerCalibration() {
+        WKInterfaceDevice.current().play(.start)
+        withAnimation {
+            currentGesture = nil
+        }
+        accel.recalibrate()
     }
 }
 
