@@ -11,15 +11,44 @@ struct ContentView: View {
     @EnvironmentObject private var phoneSession: PhoneSessionManager
 
     var body: some View {
-        VStack {
-            Text("Last gesture: \(phoneSession.lastGesture?.rawValue ?? "none")")
-            // Rest of your UI
+        VStack(spacing: 20) {
+
+            // MARK: - Connection Status
+            HStack(spacing: 8) {
+                Image(systemName: phoneSession.isReachable ? "circle.fill" : "circle")
+                    .foregroundColor(phoneSession.isReachable ? .green : .red)
+                    .font(.system(size: 14))
+
+                Text(phoneSession.isReachable ? "Watch Connected" : "Watch Not Reachable")
+                    .foregroundColor(phoneSession.isReachable ? .green : .red)
+                    .font(.headline)
+            }
+
+            Divider()
+                .padding(.horizontal)
+
+            // MARK: - Last Gesture
+            VStack(spacing: 8) {
+                Text("Last Gesture:")
+                    .font(.title3)
+                    .foregroundColor(.secondary)
+
+                Text(phoneSession.lastGesture?.rawValue.capitalized ?? "None")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .foregroundColor(.primary)
+            }
+
+            Spacer()
         }
+        .padding()
     }
 }
 
-// IMPORTANT: provide the environmentObject in Preview, or preview will crash
+// MARK: - Preview
+
 #Preview {
     ContentView()
         .environmentObject(PhoneSessionManager.shared)
 }
+
