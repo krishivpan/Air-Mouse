@@ -152,7 +152,7 @@ struct StartPage: View {
                     
                     // Calibration hint (shows briefly on appear)
                     if showCalibrationHint {
-                        Text("Long press to calibrate")
+                        Text("Rotate crown to calibrate")
                             .font(.system(size: 9))
                             .foregroundColor(.gray)
                             .transition(.opacity)
