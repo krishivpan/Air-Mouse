@@ -17,7 +17,7 @@ struct BreathingCircle: View {
             .scaleEffect(animate ? 1.2 : 0.8) // pulse size
             .opacity(animate ? 0.6 : 0.3)     // fade in/out
             .animation(
-                .easeInOut(duration: 1.0)
+                .easeInOut(duration: 2.0)
                 .repeatForever(autoreverses: true),
                 value: animate
             )
