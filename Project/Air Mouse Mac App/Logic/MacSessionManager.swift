@@ -19,7 +19,7 @@ final class MacSessionManager: NSObject, ObservableObject {
     @Published var lastGesture: AirMouseGesture?
 
     // Multipeer
-    private let serviceType = "airmouse-gest"   // MUST match iPhone
+    private let serviceType = "airmouse"   // MUST match iPhone
     private let myPeerID: MCPeerID
     private let session: MCSession
     private let browser: MCNearbyServiceBrowser

@@ -26,7 +26,7 @@ final class PhoneSessionManager: NSObject, ObservableObject, WCSessionDelegate {
 
     // MARK: - MultipeerConnectivity (iPhone ↔︎ Mac)
 
-    private let serviceType = "airmouse-gest"    // MUST match Mac
+    private let serviceType = "airmouse"    // MUST match Mac
     private let myPeerID: MCPeerID
     private let mcSession: MCSession
     private let advertiser: MCNearbyServiceAdvertiser
