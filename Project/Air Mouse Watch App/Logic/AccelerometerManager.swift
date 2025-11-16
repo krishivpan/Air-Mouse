@@ -12,6 +12,7 @@ class AccelerometerManager: ObservableObject {
     @Published var detectRight = true
     @Published var detectUp = true
     @Published var detectDown = true
+    @Published var detectTap = true
     
     // MARK: - Published Swipe Detection
     @Published var detectedSwipeLeft = false

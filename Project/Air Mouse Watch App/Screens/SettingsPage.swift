@@ -46,7 +46,7 @@ private extension SettingsPage {
     var headerView: some View {
         VStack(alignment: .leading, spacing: 3) {
             Text("Settings")
-                .font(.system(size: 22, weight: .bold, design: .rounded))
+                .font(.system(size: 24, weight: .bold, design: .rounded))
                 .foregroundStyle(
                     LinearGradient(
                         colors: [Color.purple, Color.purple.opacity(0.7)],
@@ -68,6 +68,7 @@ private extension SettingsPage {
                 .foregroundColor(.white)
             
             VStack(spacing: 8) {
+                toggleRow(label: "Tap", isOn: $accel.detectTap)
                 toggleRow(label: "Left Swipe", isOn: $accel.detectLeft)
                 toggleRow(label: "Right Swipe", isOn: $accel.detectRight)
                 toggleRow(label: "Up Swipe", isOn: $accel.detectUp)

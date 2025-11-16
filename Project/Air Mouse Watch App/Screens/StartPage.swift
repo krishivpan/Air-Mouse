@@ -119,6 +119,7 @@ struct StartPage: View {
             VStack(spacing: 8) {
                 
                 Spacer()
+                    .frame(height: 45)
 
                 // MARK: Header Card
                 VStack(alignment: .leading, spacing: 6) {
@@ -138,7 +139,7 @@ struct StartPage: View {
                             .fill(watchSession.isReachable ? Color.green : Color.red)
                             .frame(width: 8, height: 8)
 
-                        Text(watchSession.isReachable ? "Connected" : "Disconnected")
+                        Text(watchSession.isReachable ? "Connected to iPhone" : "Not Connected")
                             .font(.system(size: 10))
                             .foregroundColor(watchSession.isReachable ? .green : .red)
                     }
@@ -160,8 +161,7 @@ struct StartPage: View {
                         .shadow(color: Color.black.opacity(0.35), radius: 8, x: 0, y: 4)
                 )
 
-                Spacer()
-                    .frame(height: 12)
+
 
                 // MARK: Gesture Detection Card with seamless animation
                 ZStack {
@@ -372,6 +372,8 @@ struct StartPage: View {
     }
     
     private func handleTap() {
+        guard accel.detectTap else { return }
+        
         WKInterfaceDevice.current().play(.click)
         
         withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
