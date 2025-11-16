@@ -204,8 +204,8 @@ struct StartPage: View {
                 }
                 .onChange(of: accel.detectedSwipeLeft) { _, newValue in
                     if newValue {
-                        // Play haptic feedback
-                        WKInterfaceDevice.current().play(.click)
+                        // Play haptic feedback (stronger)
+                        WKInterfaceDevice.current().play(.success)
                         
                         withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                             currentGesture = .leftSwipe
@@ -216,8 +216,8 @@ struct StartPage: View {
                 }
                 .onChange(of: accel.detectedSwipeRight) { _, newValue in
                     if newValue {
-                        // Play haptic feedback
-                        WKInterfaceDevice.current().play(.click)
+                        // Play haptic feedback (stronger)
+                        WKInterfaceDevice.current().play(.success)
                         
                         withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                             currentGesture = .rightSwipe
@@ -228,8 +228,8 @@ struct StartPage: View {
                 }
                 .onChange(of: accel.detectedSwipeUp) { _, newValue in
                     if newValue {
-                        // Play haptic feedback
-                        WKInterfaceDevice.current().play(.click)
+                        // Play haptic feedback (stronger)
+                        WKInterfaceDevice.current().play(.success)
                         
                         withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                             currentGesture = .upSwipe
@@ -240,8 +240,8 @@ struct StartPage: View {
                 }
                 .onChange(of: accel.detectedSwipeDown) { _, newValue in
                     if newValue {
-                        // Play haptic feedback
-                        WKInterfaceDevice.current().play(.click)
+                        // Play haptic feedback (stronger)
+                        WKInterfaceDevice.current().play(.success)
                         
                         withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                             currentGesture = .downSwipe
