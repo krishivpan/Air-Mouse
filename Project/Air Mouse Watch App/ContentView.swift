@@ -30,8 +30,11 @@ struct ContentView: View {
                     }
                     .buttonStyle(.plain)
                     
-                    NavigationButton(title: "Configure", buttonColor: Color("Green"))
-                    NavigationButton(title: "Settings", buttonColor: Color("Purple"))
+                    NavigationLink(destination: SettingsPage()) {
+                        NavigationButton(title: "Settings", buttonColor: Color("Purple"))
+                    }
+                    .buttonStyle(.plain)
+                    
                 }
                 .padding()
                 .frame(maxWidth: .infinity)
