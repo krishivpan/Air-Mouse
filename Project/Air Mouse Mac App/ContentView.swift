@@ -13,11 +13,11 @@ struct ContentView: View {
 
     var body: some View {
         ZStack {
-            // Background
+            // Subtle gradient background
             LinearGradient(
                 colors: [
-                    Color.black,
-                    Color(red: 0.07, green: 0.07, blue: 0.15)
+                    Color(red: 0.02, green: 0.02, blue: 0.05),
+                    Color(red: 0.05, green: 0.05, blue: 0.08)
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
@@ -27,18 +27,17 @@ struct ContentView: View {
             TabView {
                 DashboardView(macConnection: macConnection)
                     .tabItem {
-                        Label("Dashboard", systemImage: "waveform")
+                        Label("Dashboard", systemImage: "circle.grid.2x2.fill")
                     }
 
                 MacroSettingsView(macroManager: macroManager)
                     .tabItem {
-                        Label("Gestures & Macros", systemImage: "slider.horizontal.3")
+                        Label("Macros", systemImage: "command")
                     }
             }
             .accentColor(.cyan)
-            .padding(.top, 4) // small breathing room
         }
-        .frame(minWidth: 560, minHeight: 360)
+        .frame(minWidth: 700, minHeight: 450)
     }
 }
 
@@ -48,12 +47,15 @@ private struct DashboardView: View {
     @ObservedObject var macConnection: MacSessionManager
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 22) {
-
+        VStack(spacing: 0) {
+            // Spacer for top breathing room
+            Spacer()
+                .frame(height: 60)
+            
             // Header
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Air Mouse – Mac")
-                    .font(.system(size: 30, weight: .bold, design: .rounded))
+            VStack(spacing: 12) {
+                Text("Air Mouse")
+                    .font(.system(size: 42, weight: .light, design: .rounded))
                     .foregroundStyle(
                         LinearGradient(
                             colors: [Color.cyan, Color.blue, Color.purple],
@@ -61,221 +63,228 @@ private struct DashboardView: View {
                             endPoint: .trailing
                         )
                     )
+                    .kerning(1.2)
 
-                Text("Runs quietly in the background, translating Watch gestures into Mac shortcuts.")
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
+                Text("Control your Mac with Apple Watch gestures")
+                    .font(.system(size: 13, weight: .regular))
+                    .foregroundColor(.white.opacity(0.5))
+                    .kerning(0.3)
             }
+            
+            Spacer()
+                .frame(height: 50)
 
-            // Connection + current gesture in a grid
-            HStack(alignment: .top, spacing: 16) {
+            // Status Cards - Horizontal Layout
+            HStack(spacing: 20) {
                 connectionStatusCard
-                currentGestureCard
+                gestureFeedCard
             }
+            .padding(.horizontal, 80)
 
             Spacer()
         }
-        .padding(24)
     }
 
     private var connectionStatusCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Label("Connection Status", systemImage: "antenna.radiowaves.left.and.right")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                Spacer()
-            }
-
-            HStack(spacing: 10) {
+        VStack(spacing: 0) {
+            // Status indicator
+            HStack(spacing: 12) {
                 Circle()
-                    .fill(macConnection.isConnected ? Color.green : Color.red)
-                    .frame(width: 10, height: 10)
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(macConnection.isConnected ? "Connected to iPhone" : "Not Connected")
-                        .font(.subheadline)
-                        .foregroundColor(macConnection.isConnected ? .green : .red)
-
+                    .fill(macConnection.isConnected ?
+                          Color.green.opacity(0.9) :
+                          Color.white.opacity(0.15))
+                    .frame(width: 8, height: 8)
+                    .overlay(
+                        Circle()
+                            .stroke(macConnection.isConnected ?
+                                   Color.green.opacity(0.3) :
+                                   Color.white.opacity(0.1),
+                                   lineWidth: 8)
+                    )
+                
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(macConnection.isConnected ? "Connected" : "Searching")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(.white)
+                    
                     if let peerName = macConnection.connectedPeerName, macConnection.isConnected {
                         Text(peerName)
-                            .font(.caption)
-                            .foregroundColor(.gray)
+                            .font(.system(size: 11, weight: .regular))
+                            .foregroundColor(.white.opacity(0.4))
+                    } else {
+                        Text("Looking for iPhone...")
+                            .font(.system(size: 11, weight: .regular))
+                            .foregroundColor(.white.opacity(0.4))
                     }
                 }
-
+                
                 Spacer()
             }
-
-            Text("Leave this app running while you use your Mac. Gestures from your Watch → iPhone will be translated into key presses and clicks.")
-                .font(.caption)
-                .foregroundColor(.gray)
+            .padding(24)
         }
-        .padding()
+        .frame(maxWidth: .infinity)
+        .frame(height: 100)
         .background(
-            RoundedRectangle(cornerRadius: 20)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            Color(red: 0.12, green: 0.12, blue: 0.18),
-                            Color(red: 0.08, green: 0.08, blue: 0.14)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color.white.opacity(0.03))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Color.white.opacity(0.08), lineWidth: 1)
                 )
-                .shadow(color: Color.black.opacity(0.4), radius: 16, x: 0, y: 10)
         )
     }
 
-    private var currentGestureCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Current Gesture")
-                .font(.headline)
-                .foregroundColor(.white)
-
-            RoundedRectangle(cornerRadius: 18)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            Color(red: 0.18, green: 0.18, blue: 0.26),
-                            Color(red: 0.10, green: 0.10, blue: 0.18)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .overlay(
-                    HStack {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(prettyGestureName(macConnection.lastGesture))
-                                .font(.title3)
-                                .fontWeight(.semibold)
-                                .foregroundColor(.white)
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.7)
-
-                            Text("Live from iPhone")
-                                .font(.caption)
-                                .foregroundColor(.gray)
-                        }
-
-                        Spacer()
-
-                        // "live" indicator
-                        ZStack {
-                            Circle()
-                                .stroke(Color.blue.opacity(0.3), lineWidth: 6)
-                                .frame(width: 46, height: 46)
-
-                            Circle()
-                                .fill(Color.blue.opacity(0.9))
-                                .frame(width: 18, height: 18)
-                        }
-                    }
-                    .padding(.horizontal, 16)
-                )
-                .frame(height: 90)
+    private var gestureFeedCard: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 12) {
+                // Gesture indicator
+                ZStack {
+                    Circle()
+                        .fill(Color.white.opacity(0.05))
+                        .frame(width: 36, height: 36)
+                    
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: [Color.blue, Color.cyan],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 8, height: 8)
+                }
+                
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(prettyGestureName(macConnection.lastGesture))
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(.white)
+                        .lineLimit(1)
+                    
+                    Text("Last gesture")
+                        .font(.system(size: 11, weight: .regular))
+                        .foregroundColor(.white.opacity(0.4))
+                }
+                
+                Spacer()
+            }
+            .padding(24)
         }
+        .frame(maxWidth: .infinity)
+        .frame(height: 100)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color.white.opacity(0.03))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                )
+        )
     }
 
     private func prettyGestureName(_ gesture: AirMouseGesture?) -> String {
-        guard let gesture = gesture else { return "Waiting for Gestures…" }
+        guard let gesture = gesture else { return "None" }
 
         switch gesture {
         case .leftSwipe:      return "Left Swipe"
         case .rightSwipe:     return "Right Swipe"
         case .upSwipe:        return "Up Swipe"
         case .downSwipe:      return "Down Swipe"
-        case .clockSwipe:     return "Clockwise Swipe"
-        case .counterSwipe:   return "Counter-Clockwise Swipe"
+        case .clockSwipe:     return "Clockwise"
+        case .counterSwipe:   return "Counter-Clockwise"
         case .tap:            return "Tap"
         case .clench:         return "Clench"
         }
     }
 }
 
-// MARK: - Macro settings
+// MARK: - Macro Settings
 
 private struct MacroSettingsView: View {
     @ObservedObject var macroManager: GestureMacroManager
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-
+        VStack(alignment: .leading, spacing: 0) {
             // Header
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Gestures & Macros")
-                    .font(.system(size: 24, weight: .semibold, design: .rounded))
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Gesture Macros")
+                    .font(.system(size: 28, weight: .light))
                     .foregroundColor(.white)
+                    .kerning(0.5)
 
-                Text("Choose what each gesture does on your Mac — arrow keys, clicks, or nothing.")
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
+                Text("Map gestures to keyboard and mouse actions")
+                    .font(.system(size: 12, weight: .regular))
+                    .foregroundColor(.white.opacity(0.5))
             }
-            .padding(.horizontal, 24)
-            .padding(.top, 24)
+            .padding(.horizontal, 40)
+            .padding(.top, 40)
+            .padding(.bottom, 30)
 
-            // List of gesture → macro mappings
+            // Gesture list
             ScrollView {
-                VStack(spacing: 12) {
+                VStack(spacing: 8) {
                     ForEach(AirMouseGesture.allCases, id: \.self) { gesture in
                         gestureRow(for: gesture)
                     }
-
-                    HStack {
-                        Spacer()
-                        Button(role: .destructive) {
-                            macroManager.resetToDefaults()
-                        } label: {
-                            Label("Reset to Defaults", systemImage: "arrow.counterclockwise")
-                                .font(.caption)
-                        }
-                        .buttonStyle(.bordered)
-                        .padding(.top, 4)
-                    }
                 }
-                .padding(.horizontal, 24)
-                .padding(.bottom, 24)
+                .padding(.horizontal, 40)
+                .padding(.bottom, 20)
+                
+                Button(role: .destructive) {
+                    macroManager.resetToDefaults()
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "arrow.counterclockwise")
+                            .font(.system(size: 11))
+                        Text("Reset to Defaults")
+                            .font(.system(size: 12, weight: .medium))
+                    }
+                    .foregroundColor(.white.opacity(0.6))
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Color.white.opacity(0.05))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                            )
+                    )
+                }
+                .buttonStyle(.plain)
+                .padding(.bottom, 30)
             }
         }
     }
 
     private func gestureRow(for gesture: AirMouseGesture) -> some View {
-        HStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(prettyGestureName(gesture))
-                    .foregroundColor(.white)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-
-                Text(bindingSubtitle(for: gesture))
-                    .font(.caption)
-                    .foregroundColor(.gray)
-            }
+        HStack(spacing: 16) {
+            // Gesture name
+            Text(prettyGestureName(gesture))
+                .foregroundColor(.white)
+                .font(.system(size: 13, weight: .regular))
+                .frame(width: 140, alignment: .leading)
 
             Spacer()
 
+            // Action picker
             Picker("", selection: binding(for: gesture)) {
                 ForEach(MacroTarget.allCases) { target in
-                    Text(target.displayName).tag(target)
+                    Text(target.displayName)
+                        .font(.system(size: 12))
+                        .tag(target)
                 }
             }
             .pickerStyle(.menu)
-            .frame(width: 180)
+            .frame(width: 140)
         }
-        .padding(10)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 12)
         .background(
-            RoundedRectangle(cornerRadius: 14)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            Color(red: 0.14, green: 0.14, blue: 0.22),
-                            Color(red: 0.10, green: 0.10, blue: 0.18)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
+            RoundedRectangle(cornerRadius: 10)
+                .fill(Color.white.opacity(0.03))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(Color.white.opacity(0.08), lineWidth: 1)
                 )
         )
     }
@@ -297,20 +306,10 @@ private struct MacroSettingsView: View {
         case .rightSwipe:     return "Right Swipe"
         case .upSwipe:        return "Up Swipe"
         case .downSwipe:      return "Down Swipe"
-        case .clockSwipe:     return "Clockwise Swipe"
-        case .counterSwipe:   return "Counter-Clockwise Swipe"
+        case .clockSwipe:     return "Clockwise"
+        case .counterSwipe:   return "Counter-CW"
         case .tap:            return "Tap"
         case .clench:         return "Clench"
-        }
-    }
-
-    private func bindingSubtitle(for gesture: AirMouseGesture) -> String {
-        let target = macroManager.bindings[gesture] ?? .none
-        switch target {
-        case .none:
-            return "This gesture is ignored."
-        default:
-            return "Triggers: \(target.displayName)"
         }
     }
 }

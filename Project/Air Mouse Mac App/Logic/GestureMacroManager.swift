@@ -7,7 +7,7 @@
 
 import Foundation
 import Combine
-import AppKit   // for NSEvent.mouseLocation
+import AppKit
 import CoreGraphics
 
 /// The simple actions a gesture can trigger.
@@ -24,11 +24,11 @@ enum MacroTarget: String, CaseIterable, Identifiable, Codable {
 
     var displayName: String {
         switch self {
-        case .none:        return "Do Nothing"
-        case .arrowUp:     return "Up Arrow Key"
-        case .arrowDown:   return "Down Arrow Key"
-        case .arrowLeft:   return "Left Arrow Key"
-        case .arrowRight:  return "Right Arrow Key"
+        case .none:        return "None"
+        case .arrowUp:     return "Up Arrow"
+        case .arrowDown:   return "Down Arrow"
+        case .arrowLeft:   return "Left Arrow"
+        case .arrowRight:  return "Right Arrow"
         case .leftClick:   return "Left Click"
         case .rightClick:  return "Right Click"
         }
@@ -86,7 +86,7 @@ final class GestureMacroManager: ObservableObject {
             .leftSwipe:      .arrowLeft,
             .rightSwipe:     .arrowRight,
             .tap:            .leftClick,
-            .clench:         .rightClick,
+            .clench:         .none,
             .clockSwipe:     .none,
             .counterSwipe:   .none
         ]
@@ -135,13 +135,13 @@ final class GestureMacroManager: ObservableObject {
             break
 
         case .arrowUp:
-            sendKey(keyCode: 0x7E) // up arrow
+            sendKey(keyCode: 0x7E)
         case .arrowDown:
-            sendKey(keyCode: 0x7D) // down arrow
+            sendKey(keyCode: 0x7D)
         case .arrowLeft:
-            sendKey(keyCode: 0x7B) // left arrow
+            sendKey(keyCode: 0x7B)
         case .arrowRight:
-            sendKey(keyCode: 0x7C) // right arrow
+            sendKey(keyCode: 0x7C)
 
         case .leftClick:
             sendMouseClick(button: .left)
@@ -151,7 +151,6 @@ final class GestureMacroManager: ObservableObject {
     }
 
     // MARK: - Low-level event helpers
-    // NOTE: For these to affect other apps, your app must have Accessibility permission.
 
     private func sendKey(keyCode: CGKeyCode) {
         guard let source = CGEventSource(stateID: .hidSystemState) else { return }
@@ -164,27 +163,29 @@ final class GestureMacroManager: ObservableObject {
     }
 
     private func sendMouseClick(button: CGMouseButton) {
+        // Get the CURRENT mouse location without creating any events that might move it
+        let currentLocation = CGEvent(source: nil)?.location ?? NSEvent.mouseLocation
+        
         guard let source = CGEventSource(stateID: .hidSystemState) else { return }
-
-        // NSEvent.mouseLocation is in global screen coordinates (origin bottom-left for CGEvent).
-        let location = NSEvent.mouseLocation
 
         let downType: CGEventType = (button == .left) ? .leftMouseDown : .rightMouseDown
         let upType: CGEventType   = (button == .left) ? .leftMouseUp   : .rightMouseUp
 
+        // Create mouse events at the EXACT current location - don't move the cursor
         let down = CGEvent(
             mouseEventSource: source,
             mouseType: downType,
-            mouseCursorPosition: location,
+            mouseCursorPosition: currentLocation,
             mouseButton: button
         )
         let up = CGEvent(
             mouseEventSource: source,
             mouseType: upType,
-            mouseCursorPosition: location,
+            mouseCursorPosition: currentLocation,
             mouseButton: button
         )
 
+        // Post the events
         down?.post(tap: .cghidEventTap)
         up?.post(tap: .cghidEventTap)
     }
