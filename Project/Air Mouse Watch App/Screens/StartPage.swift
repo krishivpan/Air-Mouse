@@ -140,7 +140,7 @@ struct StartPage: View {
                             .frame(width: 8, height: 8)
 
                         Text(watchSession.isReachable ? "Connected to iPhone" : "Not Connected")
-                            .font(.system(size: 16))
+                            .font(.system(size: 11))
                             .foregroundColor(watchSession.isReachable ? .green : .red)
                     }
                 }
