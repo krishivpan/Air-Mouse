@@ -11,6 +11,8 @@
 		5D4A79A02EC9215B0051B14F /* AirMouseCommunication.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D4A799F2EC9215A0051B14F /* AirMouseCommunication.swift */; };
 		5D4A79A12EC921700051B14F /* AirMouseCommunication.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D4A799F2EC9215A0051B14F /* AirMouseCommunication.swift */; };
 		5DEA0EAF2EC8FB2F00BC991E /* Air Mouse Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 5DEA0EAE2EC8FB2F00BC991E /* Air Mouse Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		600CC48E2ECB0C7600C88C8A /* WatchConnectivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 600CC48D2ECB0C7600C88C8A /* WatchConnectivity.framework */; };
+		600CC4902ECB0CAE00C88C8A /* WatchConnectivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 600CC48F2ECB0CAE00C88C8A /* WatchConnectivity.framework */; platformFilter = ios; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -42,6 +44,8 @@
 		5D4A799F2EC9215A0051B14F /* AirMouseCommunication.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirMouseCommunication.swift; sourceTree = "<group>"; };
 		5DEA0E8B2EC8FB2E00BC991E /* Air Mouse.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Air Mouse.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		5DEA0EAE2EC8FB2F00BC991E /* Air Mouse Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Air Mouse Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		600CC48D2ECB0C7600C88C8A /* WatchConnectivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WatchConnectivity.framework; path = Platforms/WatchOS.platform/Developer/SDKs/WatchOS26.1.sdk/System/Library/Frameworks/WatchConnectivity.framework; sourceTree = DEVELOPER_DIR; };
+		600CC48F2ECB0CAE00C88C8A /* WatchConnectivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WatchConnectivity.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.1.sdk/System/Library/Frameworks/WatchConnectivity.framework; sourceTree = DEVELOPER_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -74,6 +78,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				600CC4902ECB0CAE00C88C8A /* WatchConnectivity.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -81,6 +86,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				600CC48E2ECB0C7600C88C8A /* WatchConnectivity.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -94,6 +100,7 @@
 				5DEA0E8D2EC8FB2E00BC991E /* Air Mouse */,
 				5DEA0EB22EC8FB2F00BC991E /* Air Mouse Watch App */,
 				5D0069502EC9953100AC736A /* Air Mouse Mac App */,
+				600CC48C2ECB0C7600C88C8A /* Frameworks */,
 				5DEA0E8C2EC8FB2E00BC991E /* Products */,
 			);
 			sourceTree = "<group>";
@@ -106,6 +113,15 @@
 				5D00694F2EC9953100AC736A /* Air Mouse Mac App.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		600CC48C2ECB0C7600C88C8A /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				600CC48F2ECB0CAE00C88C8A /* WatchConnectivity.framework */,
+				600CC48D2ECB0C7600C88C8A /* WatchConnectivity.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -286,6 +302,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -313,7 +330,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "KP-RJ.Air-Mouse-Mac-App";
+				PRODUCT_BUNDLE_IDENTIFIER = "KP.Air-Mouse-Mac-App";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = macosx;
@@ -331,6 +348,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -358,7 +376,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "KP-RJ.Air-Mouse-Mac-App";
+				PRODUCT_BUNDLE_IDENTIFIER = "KP.Air-Mouse-Mac-App";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = macosx;
@@ -494,18 +512,18 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 8NR2988TH3;
+				DEVELOPMENT_TEAM = QWCH727P65;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Air Mouse";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = "KP-RJ.Air-Mouse";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = "KP.Air-Mouse";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "KP-RJ.Air-Mouse.watchkitapp";
+				PRODUCT_BUNDLE_IDENTIFIER = "KP.Air-Mouse.watchkitapp";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
@@ -527,18 +545,18 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 8NR2988TH3;
+				DEVELOPMENT_TEAM = QWCH727P65;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Air Mouse";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = "KP-RJ.Air-Mouse";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = "KP.Air-Mouse";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "KP-RJ.Air-Mouse.watchkitapp";
+				PRODUCT_BUNDLE_IDENTIFIER = "KP.Air-Mouse.watchkitapp";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
@@ -561,7 +579,10 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 8NR2988TH3;
+				DEVELOPMENT_TEAM = QWCH727P65;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Air-Mouse-Info.plist";
@@ -577,12 +598,14 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "KP-RJ.Air-Mouse";
+				PRODUCT_BUNDLE_IDENTIFIER = "KP.Air-Mouse";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
 				SDKROOT = iphoneos;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
@@ -602,7 +625,10 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 8NR2988TH3;
+				DEVELOPMENT_TEAM = QWCH727P65;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Air-Mouse-Info.plist";
@@ -618,12 +644,14 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "KP-RJ.Air-Mouse";
+				PRODUCT_BUNDLE_IDENTIFIER = "KP.Air-Mouse";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
 				SDKROOT = iphoneos;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;

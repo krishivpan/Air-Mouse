@@ -1,54 +1,63 @@
-//
-//  StartPage.swift
-//  Air Mouse
-//
-//  Created by Krishiv Panchal on 2025-11-15.
-//
-
 import SwiftUI
 import WatchKit
 import Combine
+import HealthKit
 
-final class ExtendedRuntimeController: NSObject, ObservableObject, WKExtendedRuntimeSessionDelegate {
-
+final class WorkoutSessionController: NSObject, ObservableObject {
     @Published var isRunning: Bool = false
-    @Published var lastError: Error?
-
-    private var session: WKExtendedRuntimeSession?
-
+    
+    private var healthStore = HKHealthStore()
+    private var session: HKWorkoutSession?
+    private var builder: HKLiveWorkoutBuilder?
+    
     func startSession() {
-        if session == nil {
-            let newSession = WKExtendedRuntimeSession()
-            newSession.delegate = self
-            session = newSession
+        // Request authorization
+        let typesToShare: Set = [HKQuantityType.workoutType()]
+        let typesToRead: Set = [
+            HKQuantityType.quantityType(forIdentifier: .heartRate)!,
+            HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned)!
+        ]
+        
+        healthStore.requestAuthorization(toShare: typesToShare, read: typesToRead) { success, error in
+            if success {
+                self.beginWorkout()
+            }
         }
-        guard let session = session else { return }
-        if session.state == .running { return }
-        session.start()
     }
-
+    
+    private func beginWorkout() {
+        let configuration = HKWorkoutConfiguration()
+        configuration.activityType = .other
+        configuration.locationType = .indoor
+        
+        do {
+            session = try HKWorkoutSession(healthStore: healthStore, configuration: configuration)
+            builder = session?.associatedWorkoutBuilder()
+            
+            builder?.dataSource = HKLiveWorkoutDataSource(
+                healthStore: healthStore,
+                workoutConfiguration: configuration
+            )
+            
+            session?.startActivity(with: Date())
+            builder?.beginCollection(withStart: Date()) { success, error in
+                DispatchQueue.main.async {
+                    self.isRunning = success
+                }
+            }
+        } catch {
+            print("Failed to start workout: \(error)")
+        }
+    }
+    
     func endSession() {
-        session?.invalidate()
-    }
-
-    func extendedRuntimeSessionDidStart(_ session: WKExtendedRuntimeSession) {
-        DispatchQueue.main.async {
-            self.isRunning = true
-            self.lastError = nil
-        }
-    }
-
-    func extendedRuntimeSessionWillExpire(_ session: WKExtendedRuntimeSession) {}
-
-    func extendedRuntimeSession(
-        _ session: WKExtendedRuntimeSession,
-        didInvalidateWith reason: WKExtendedRuntimeSessionInvalidationReason,
-        error: Error?
-    ) {
-        DispatchQueue.main.async {
-            self.isRunning = false
-            self.lastError = error
-            if self.session === session { self.session = nil }
+        session?.end()
+        builder?.endCollection(withEnd: Date()) { success, error in
+            self.builder?.finishWorkout { workout, error in
+                DispatchQueue.main.async {
+                    self.isRunning = false
+                }
+            }
         }
     }
 }
@@ -59,7 +68,6 @@ struct breathingCircle: View {
     
     var body: some View {
         ZStack {
-            // Single elegant ring
             Circle()
                 .stroke(
                     LinearGradient(
@@ -76,14 +84,12 @@ struct breathingCircle: View {
                 .scaleEffect(scale)
                 .opacity(opacity)
             
-            // Center dot
             Circle()
                 .fill(Color.white.opacity(0.8))
                 .frame(width: 6, height: 6)
         }
         .frame(width: 70, height: 70)
         .onAppear {
-            // Breathing animation
             withAnimation(
                 Animation
                     .easeInOut(duration: 2.5)
@@ -99,13 +105,13 @@ struct breathingCircle: View {
 struct StartPage: View {
     @EnvironmentObject private var watchSession: WatchSessionManager
     @ObservedObject private var accel = AccelerometerManager.shared
-    @StateObject private var runtimeController = ExtendedRuntimeController()
+    @StateObject private var workoutController = WorkoutSessionController()
     
     @State private var currentGesture: AirMouseGesture?
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         ZStack {
-            // Dark, techy background
             LinearGradient(
                 colors: [
                     Color.black,
@@ -147,9 +153,7 @@ struct StartPage: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(12)
 
-
-
-                // MARK: Gesture Detection Card with seamless animation
+                // MARK: Gesture Detection Card
                 ZStack {
                     if accel.isCalibrating {
                         calibratingView
@@ -180,9 +184,7 @@ struct StartPage: View {
                 .padding()
                 .onChange(of: accel.detectedSwipeLeft) { _, newValue in
                     if newValue {
-                        // Play haptic feedback (stronger)
                         WKInterfaceDevice.current().play(.success)
-                        
                         withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                             currentGesture = .leftSwipe
                         }
@@ -192,9 +194,7 @@ struct StartPage: View {
                 }
                 .onChange(of: accel.detectedSwipeRight) { _, newValue in
                     if newValue {
-                        // Play haptic feedback (stronger)
                         WKInterfaceDevice.current().play(.success)
-                        
                         withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                             currentGesture = .rightSwipe
                         }
@@ -204,9 +204,7 @@ struct StartPage: View {
                 }
                 .onChange(of: accel.detectedSwipeUp) { _, newValue in
                     if newValue {
-                        // Play haptic feedback (stronger)
                         WKInterfaceDevice.current().play(.success)
-                        
                         withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                             currentGesture = .upSwipe
                         }
@@ -216,9 +214,7 @@ struct StartPage: View {
                 }
                 .onChange(of: accel.detectedSwipeDown) { _, newValue in
                     if newValue {
-                        // Play haptic feedback (stronger)
                         WKInterfaceDevice.current().play(.success)
-                        
                         withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                             currentGesture = .downSwipe
                         }
@@ -234,11 +230,11 @@ struct StartPage: View {
         .preferredColorScheme(.dark)
         .onAppear {
             accel.start()
-            runtimeController.startSession()
+            workoutController.startSession()
         }
         .onDisappear {
             accel.stop()
-            runtimeController.endSession()
+            workoutController.endSession()
         }
     }
     
@@ -246,13 +242,11 @@ struct StartPage: View {
         let iconData = getIconData(for: gesture)
         
         return ZStack {
-            // Glow effect
             Circle()
                 .fill(iconData.color.opacity(0.3))
                 .frame(width: 80, height: 80)
                 .blur(radius: 10)
             
-            // Icon
             Image(systemName: iconData.name)
                 .font(.system(size: 50))
                 .foregroundStyle(
@@ -282,17 +276,6 @@ struct StartPage: View {
         }
     }
     
-    private func gestureColor(for gesture: AirMouseGesture) -> Color {
-        switch gesture {
-        case .tap: return .cyan
-        case .leftSwipe: return .green
-        case .rightSwipe: return .blue
-        case .upSwipe: return .orange
-        case .downSwipe: return .red
-        default: return .white
-        }
-    }
-    
     private func resetGesture() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
             withAnimation(.easeOut(duration: 0.3)) {
@@ -304,7 +287,6 @@ struct StartPage: View {
     // MARK: - Calibration Views
     private var calibratingView: some View {
         VStack(spacing: 10) {
-            // Pulsing circle indicator
             ZStack {
                 Circle()
                     .stroke(Color.cyan.opacity(0.3), lineWidth: 3)

@@ -101,6 +101,16 @@ final class PhoneSessionManager: NSObject, ObservableObject, WCSessionDelegate {
             print("[Phone→Mac] Failed to send gesture: \(error.localizedDescription)")
         }
     }
+    
+    // MARK: - Handle Gesture (common handler)
+    
+    private func handleGesture(_ gesture: AirMouseGesture) {
+        DispatchQueue.main.async {
+            self.lastGesture = gesture
+            // 🔁 FORWARD TO MAC
+            self.sendGestureToMac(gesture)
+        }
+    }
 
     // MARK: - WCSessionDelegate (Watch → iPhone)
 
@@ -137,7 +147,7 @@ final class PhoneSessionManager: NSObject, ObservableObject, WCSessionDelegate {
         print("Watch state changed: paired=\(session.isPaired), installed=\(session.isWatchAppInstalled)")
     }
 
-    // WATCH → PHONE gesture message
+    // WATCH → PHONE gesture message (when watch is awake and reachable)
     func session(_ session: WCSession, didReceiveMessage message: [String : Any]) {
         print("Received message from Watch: \(message)")
 
@@ -146,12 +156,19 @@ final class PhoneSessionManager: NSObject, ObservableObject, WCSessionDelegate {
             let gesture = AirMouseGesture(rawValue: gestureString)
         else { return }
 
-        DispatchQueue.main.async {
-            self.lastGesture = gesture
-
-            // 🔁 FORWARD TO MAC
-            self.sendGestureToMac(gesture)
-        }
+        handleGesture(gesture)
+    }
+    
+    // WATCH → PHONE gesture via transferUserInfo (when watch screen is off/suspended)
+    func session(_ session: WCSession, didReceiveUserInfo userInfo: [String : Any]) {
+        print("Received userInfo from Watch: \(userInfo)")
+        
+        guard
+            let gestureString = userInfo[AirMouseKey.gesture] as? String,
+            let gesture = AirMouseGesture(rawValue: gestureString)
+        else { return }
+        
+        handleGesture(gesture)
     }
 }
 
