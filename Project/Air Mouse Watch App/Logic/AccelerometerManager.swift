@@ -92,16 +92,16 @@ class AccelerometerManager: ObservableObject {
         switch dir {
         case .left:
             detectedSwipeLeft = true
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { self.detectedSwipeLeft = false }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { self.detectedSwipeLeft = false }
         case .right:
             detectedSwipeRight = true
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { self.detectedSwipeRight = false }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { self.detectedSwipeRight = false }
         case .up:
             detectedSwipeUp = true
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { self.detectedSwipeUp = false }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { self.detectedSwipeUp = false }
         case .down:
             detectedSwipeDown = true
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { self.detectedSwipeDown = false }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { self.detectedSwipeDown = false }
         }
     }
     
