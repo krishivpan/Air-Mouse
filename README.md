@@ -3,7 +3,7 @@
 Air Mouse is a real-time motion-recognition system built for Apple Watch that converts wrist movements into directional swipe gestures. Designed for hands-free control and minimal latency, the app uses raw accelerometer data, calibration logic, and optimized gesture-processing algorithms to create a seamless motion-based input experience.
 
 
-[![Watch the demo](https://img.youtube.com/vi/VIDEO_ID/maxresdefault.jpg)](https://youtu.be/Gq5LLIsyigc)
+[![Watch the demo](https://img.youtube.com/vi/hiv-Sqb5U_4/maxresdefault.jpg)](https://www.youtube.com/watch?v=hiv-Sqb5U_4)
 
 ## Features
 
